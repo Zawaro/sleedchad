@@ -1,0 +1,23 @@
+# Gradle
+.gradle/
+build/
+
+# Local configuration files
+local.properties
+
+# Android Studio specific files
+.idea/
+*.iml
+
+# Kotlin/Java compiled classes
+*/bin/
+*/out/
+
+# IDEs
+.vscode/
+
+# Keystore files
+*.jks
+
+# Gradle wrapper
+gradle/wrapper/dists/

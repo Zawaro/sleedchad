@@ -114,9 +114,13 @@ fun SetupDialog(
             val targetSleepMinutes = (selectedSleepHours * 60) + selectedSleepMinutes
             val errandsDurationMinutes = selectedErrandsTotalMinutes
             
-            val bedtimeCalendar = Calendar.getInstance().apply {
+            val wakeUpCalendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, wakeUpHour)
                 set(Calendar.MINUTE, wakeUpMinute)
+            }
+            
+            val bedtimeCalendar = Calendar.getInstance().apply {
+                timeInMillis = wakeUpCalendar.timeInMillis
                 add(Calendar.MINUTE, -targetSleepMinutes)
                 add(Calendar.MINUTE, -errandsDurationMinutes)
             }
@@ -125,7 +129,7 @@ fun SetupDialog(
                 onSavePreferences(
                     selectedSleepHours, 
                     selectedSleepMinutes, 
-                    bedtimeCalendar.timeInMillis,
+                    wakeUpCalendar.timeInMillis,
                     0, 
                     selectedErrandsTotalMinutes
                 )

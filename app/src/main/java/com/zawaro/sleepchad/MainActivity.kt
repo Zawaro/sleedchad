@@ -49,10 +49,13 @@ class MainActivity : ComponentActivity() {
         val recordWakeUp = RecordWakeUpUseCase(userPrefsRepo)
         val getLastNightSession = GetLastNightSleepSessionUseCase(userPrefsRepo)
         
+val scheduleFactory = ViewModelFactory(application)
+        val preferencesFactory = PreferencesViewModelFactory(getUserPrefs, saveUserPrefs, recordBedtime, recordWakeUp, getLastNightSession)
+
         setContent {
             SleepChadAppTheme {
-                val scheduleViewModel: ScheduleViewModel = viewModel<ScheduleViewModel>()
-                val preferencesViewModel = viewModel<PreferencesViewModel>()
+                val scheduleViewModel: ScheduleViewModel = viewModel(factory = scheduleFactory)
+                val preferencesViewModel: PreferencesViewModel = viewModel(factory = preferencesFactory)
                 val settingsViewModel = viewModel<SettingsViewModel>()
                 
                 val navController = rememberNavController()
@@ -69,5 +72,21 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+}
+
+class PreferencesViewModelFactory(
+    private val getUserPreferences: GetUserPreferencesUseCase,
+    private val saveUserPreferences: SaveUserPreferencesUseCase,
+    private val recordBedtime: RecordBedtimeUseCase?,
+    private val recordWakeUp: RecordWakeUpUseCase?,
+    private val getLastNightSession: GetLastNightSleepSessionUseCase?,
+) : androidx.lifecycle.ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(PreferencesViewModel::class.java)) {
+            return PreferencesViewModel(getUserPreferences, saveUserPreferences, recordBedtime, recordWakeUp, getLastNightSession) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

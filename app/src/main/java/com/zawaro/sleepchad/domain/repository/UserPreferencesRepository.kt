@@ -29,7 +29,7 @@ class UserPreferencesRepository(
         sleepSessionRepository.getByDate(date)
     }
 
-    fun updateSleepSession(session: com.zawaro.sleepchad.data.SleepSessionEntity) {
+    suspend fun updateSleepSession(session: com.zawaro.sleepchad.data.SleepSessionEntity) = withContext(Dispatchers.IO) {
         sleepSessionRepository.update(session)
     }
 }

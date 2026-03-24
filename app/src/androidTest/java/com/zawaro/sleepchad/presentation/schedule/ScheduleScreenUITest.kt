@@ -3,8 +3,11 @@ package com.zawaro.sleepchad.presentation.schedule
 import android.app.Application
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.test.*
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.zawaro.sleepchad.presentation.settings.SettingsViewModel
 import org.junit.Assert.assertEquals
@@ -16,16 +19,16 @@ class ScheduleScreenUITest {
     val composeTestRule = createComposeRule()
 
     @Composable
-    private fun TestTheme(content: @Composable () -> Unit) {
+    private fun testTheme(content: @Composable () -> Unit) {
         MaterialTheme { content() }
     }
 
     @Test
-    fun schedule_screen_shows_all_days() {
+    fun scheduleScreenShowsAllDays() {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val viewModel = SettingsViewModel(context)
         composeTestRule.setContent {
-            TestTheme { ScheduleScreen(viewModel) }
+            testTheme { ScheduleScreen(viewModel) }
         }
         listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun").forEach { day ->
             composeTestRule.onNodeWithText(day, useUnmergedTree = true).assertExists()
@@ -33,10 +36,10 @@ class ScheduleScreenUITest {
     }
 
     @Test
-    fun opening_settings_and_changing_theme_updates_viewmodel() {
+    fun openingSettingsAndChangingThemeUpdatesViewmodel() {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val viewModel = SettingsViewModel(context)
-        composeTestRule.setContent { TestTheme { ScheduleScreen(viewModel) } }
+        composeTestRule.setContent { testTheme { ScheduleScreen(viewModel) } }
         // Open menu
         composeTestRule.onNode(hasClickAction()).performClick()
         // Click Settings title
@@ -54,10 +57,10 @@ class ScheduleScreenUITest {
     }
 
     @Test
-    fun about_screen_navigates_back_to_schedule() {
+    fun aboutScreenNavigatesBackToSchedule() {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val viewModel = SettingsViewModel(context)
-        composeTestRule.setContent { TestTheme { ScheduleScreen(viewModel) } }
+        composeTestRule.setContent { testTheme { ScheduleScreen(viewModel) } }
         composeTestRule.onNode(hasClickAction()).performClick()
         composeTestRule.onNodeWithText("About").performClick()
         composeTestRule.onNodeWithText("Done").performClick()

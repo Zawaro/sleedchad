@@ -3,6 +3,8 @@ package com.zawaro.sleepchad.presentation.schedule
 import android.app.TimePickerDialog
 import android.content.Context
 import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,18 +17,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.foundation.background
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -34,50 +44,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.Calendar
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.foundation.BorderStroke
-
-import androidx.compose.material.icons.filled.AlarmOn
-import androidx.compose.material.icons.filled.Analytics
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Bedtime
-import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.NotificationsOff
-import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import com.zawaro.sleepchad.presentation.schedule.CircularDayPicker
 import com.zawaro.sleepchad.core.TimeFormatter
+import com.zawaro.sleepchad.data.CustomAlarmEntity
+import com.zawaro.sleepchad.presentation.settings.ErrandsDurationDialog
 import com.zawaro.sleepchad.presentation.settings.PreferencesViewModel
+import com.zawaro.sleepchad.presentation.settings.SettingsScreen
 import com.zawaro.sleepchad.presentation.settings.SettingsViewModel
 import com.zawaro.sleepchad.presentation.settings.SetupDialog
 import com.zawaro.sleepchad.presentation.settings.SleepDurationDialog
 import com.zawaro.sleepchad.presentation.settings.WakeUpTimeDialog
-import com.zawaro.sleepchad.presentation.settings.ErrandsDurationDialog
-import com.zawaro.sleepchad.presentation.settings.SettingsScreen
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 sealed class Screen { 
     object Schedule : Screen()
     object Settings : Screen()
     object About : Screen()
 }
-
 
 @Suppress("DEPRECATION")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,13 +71,22 @@ fun ScheduleScreen(
     settingsViewModel: SettingsViewModel,
     onThemeChanged: (Int) -> Unit = {}
 ) {
-    val exceptionAlarms by viewModel.exceptionAlarms.collectAsState()
-    val preferences by preferencesViewModel.preferences.collectAsState()
-    val onboardingComplete by preferencesViewModel.onboardingComplete.collectAsState(initial = false)
+    val exceptionAlarms = viewModel.exceptionAlarms.collectAsState().value.map { alarm ->
+        ScheduleViewModel.AlarmUiModel(
+            id = alarm.id,
+            name = if (alarm.name.isEmpty()) "Custom" else alarm.name,
+            isDefaultAlarm = false,
+            enabledDays = com.zawaro.sleepchad.data.CustomAlarmEntity.toDaysSet(alarm.enabledDaysString),
+            bedtimeMs = alarm.bedtimeMs,
+            wakeupMs = alarm.wakeupMs,
+        )
+    }
+    val preferences: com.zawaro.sleepchad.presentation.settings.UserPreferencesUiModel = preferencesViewModel.preferences.collectAsState().value
+    val onboardingComplete: Boolean = preferencesViewModel.onboardingComplete.collectAsState(initial = false).value
     
-    var currentScreen by remember { mutableStateOf<Screen>(Screen.Schedule) }
-    var showAddAlarmDialog by remember { mutableStateOf(false) }
-    var showSetupDialog by remember { mutableStateOf(!onboardingComplete && (preferences.targetSleepDurationMinutes == null || preferences.wakeUpTimeMs == null)) }
+    var currentScreen: Screen = remember { mutableStateOf(Screen.Schedule).value }
+    var showAddAlarmDialog: Boolean = remember { mutableStateOf(false).value }
+    var showSetupDialog: Boolean = remember { mutableStateOf(!onboardingComplete && (preferences.targetSleepDurationMinutes == null || preferences.wakeUpTimeMs == null)).value }
     
     val context = LocalContext.current
     
@@ -136,11 +128,11 @@ fun ScheduleScreen(
                         CustomAlarmUiModel(
                             id = alarm.id,
                             name = if (alarm.name.isEmpty()) "Custom" else alarm.name,
-                            enabledDays = com.zawaro.sleepchad.data.CustomAlarmEntity.Companion.toDaysSet(alarm.enabledDaysString),
+                            enabledDays = alarm.enabledDays,
                             targetSleepDurationMinutes = alarm.bedtimeMs?.let { bedtime ->
-                                val wakeTime = alarm.wakeupMs ?: 7 * 60 * 60 * 1000 // default 7AM
+                                val wakeTime = alarm.wakeupMs ?: (7 * 60 * 60 * 1000L) // default 7AM
                                 val diffMs = wakeTime - bedtime
-                                (diffMs / (1000 * 60)).toInt()
+                                ((diffMs / 60000).toInt())
                             },
                             wakeupMs = alarm.wakeupMs,
                         )
@@ -162,7 +154,7 @@ fun ScheduleScreen(
                         CustomAlarmUiModel(
                             id = alarm.id,
                             name = if (alarm.name.isEmpty()) "Custom" else alarm.name,
-                            enabledDays = com.zawaro.sleepchad.data.CustomAlarmEntity.Companion.toDaysSet(alarm.enabledDaysString),
+                            enabledDays = alarm.enabledDays,
                             targetSleepDurationMinutes = null,
                             wakeupMs = alarm.wakeupMs,
                         )
@@ -208,7 +200,7 @@ data class CustomAlarmUiModel(
 
 @Composable
 private fun MenuActions(onSettingsClicked: () -> Unit, onAboutClicked: () -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded: Boolean = remember { mutableStateOf(false).value }
     IconButton(onClick = { expanded = true }) {
         Icon(Icons.Default.MoreVert, contentDescription = "Menu")
     }
@@ -324,12 +316,12 @@ private fun AddCustomAlarmDialog(
     onDismiss: () -> Unit,
     onSave: (String, Set<Int>, Int, Int, Long?) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedDays by remember { mutableStateOf(setOf<Int>()) }
+    var name: String = remember { mutableStateOf("").value }
+    var selectedDays: Set<Int> = remember { mutableStateOf(setOf<Int>()).value }
     
     val prefSleepDuration = preferences.targetSleepDurationMinutes ?: 480 // default 8 hours
-    var targetSleepHours by remember { mutableIntStateOf(prefSleepDuration / 60) }
-    var targetSleepMinutes by remember { mutableIntStateOf(prefSleepDuration % 60) }
+    var targetSleepHours: Int = remember { mutableIntStateOf(prefSleepDuration / 60).value }
+    var targetSleepMinutes: Int = remember { mutableIntStateOf(prefSleepDuration % 60).value }
     
     val wakeUpTimeMs = preferences.wakeUpTimeMs
     
@@ -344,21 +336,21 @@ private fun AddCustomAlarmDialog(
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 TextField(
                     value = name,
-                    onValueChange = { name = it },
+                    onValueChange = { newName: String -> name = newName },
                     label = { Text("Name (optional)") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 
 CircularDayPicker(
-                    selectedDays = selectedDays, 
+                    selectedDays = remember { mutableStateOf(selectedDays).value }, 
                     onDayToggle = { day ->
                         if (day in usedDays && day !in selectedDays) return@CircularDayPicker
                         selectedDays = if (day in selectedDays) selectedDays - day else selectedDays + day
                     }
                 )
                 
-                var showHourPicker by remember { mutableStateOf(false) }
-                var showMinutePicker by remember { mutableStateOf(false) }
+                var showHourPicker: Boolean = remember { mutableStateOf(false).value }
+                var showMinutePicker: Boolean = remember { mutableStateOf(false).value }
                 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -571,9 +563,9 @@ private fun ScheduleContent(
 ) {
     val context = LocalContext.current
     
-    var showSleepDurationDialog by remember { mutableStateOf(false) }
-    var showWakeUpTimeDialog by remember { mutableStateOf(false) }
-    var showErrandsDurationDialog by remember { mutableStateOf(false) }
+    var showSleepDurationDialog: Boolean = remember { mutableStateOf(false).value }
+    var showWakeUpTimeDialog: Boolean = remember { mutableStateOf(false).value }
+    var showErrandsDurationDialog: Boolean = remember { mutableStateOf(false).value }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -912,7 +904,7 @@ private fun CustomAlarmAccordion(
     preferences: com.zawaro.sleepchad.presentation.settings.UserPreferencesUiModel,
     onDelete: () -> Unit
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded: Boolean = remember { mutableStateOf(false).value }
     
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         // Header row (always visible)
@@ -1094,8 +1086,8 @@ private fun TimeDualSpinner(
     initialMinutes: Int,
     onTimeSelected: (Int, Int) -> Unit
 ) {
-    var selectedHour by remember { mutableStateOf(initialHours) }
-    var selectedMinute by remember { mutableStateOf(initialMinutes) }
+    var selectedHour: Int = remember { mutableStateOf(initialHours).value }
+    var selectedMinute: Int = remember { mutableStateOf(initialMinutes).value }
     
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         // Hours picker

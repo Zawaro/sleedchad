@@ -12,31 +12,40 @@ object NotificationHelper {
     const val CHANNEL_WAKEUP = "channel_wakeup"
 
     fun createChannels(context: Context) {
-        val channels = listOf(
-            NotificationChannel(CHANNEL_ERRANDS, "Errands", NotificationManager.IMPORTANCE_DEFAULT),
-            NotificationChannel(CHANNEL_BEDTIME, "Bedtime", NotificationManager.IMPORTANCE_DEFAULT),
-            NotificationChannel(CHANNEL_WAKEUP, "Wakeup", NotificationManager.IMPORTANCE_DEFAULT)
-        )
+        val channels =
+            listOf(
+                NotificationChannel(CHANNEL_ERRANDS, "Errands", NotificationManager.IMPORTANCE_DEFAULT),
+                NotificationChannel(CHANNEL_BEDTIME, "Bedtime", NotificationManager.IMPORTANCE_DEFAULT),
+                NotificationChannel(CHANNEL_WAKEUP, "Wakeup", NotificationManager.IMPORTANCE_DEFAULT),
+            )
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        channels.forEach { channel -> if (manager.getNotificationChannel(channel.id) == null) {
+        channels.forEach { channel ->
+            if (manager.getNotificationChannel(channel.id) == null) {
                 manager.createNotificationChannel(channel)
             }
         }
     }
 
-    fun show(context: Context, channelId: String, title: String, message: String) {
+    fun show(
+        context: Context,
+        channelId: String,
+        title: String,
+        message: String,
+    ) {
         // Ensure POST_NOTIFICATIONS permission is granted before notifying
         if (androidx.core.content.ContextCompat.checkSelfPermission(
                 context,
-                android.Manifest.permission.POST_NOTIFICATIONS
+                android.Manifest.permission.POST_NOTIFICATIONS,
             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
-            val notification = NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .build()
+            val notification =
+                NotificationCompat
+                    .Builder(context, channelId)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .build()
             try {
                 NotificationManagerCompat.from(context).notify(0, notification)
             } catch (e: SecurityException) {

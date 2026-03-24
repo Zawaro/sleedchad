@@ -1,13 +1,6 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    kotlin("kapt")
-}
-
-// Disable kapt stubs generation and allow error types
-kapt {
-    generateStubs = false
-    correctErrorTypes = true
 }
 
 android {
@@ -16,11 +9,10 @@ android {
 
     defaultConfig {
         applicationId = "com.zawaro.sleepchad"
-        minSdk = 28
-        targetSdk = 34
+        minSdk = 26
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
-        // applicationIdSuffix removed for instrumentation tests
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testApplicationId = applicationId
     }
@@ -30,7 +22,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -39,19 +31,29 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
     buildFeatures {
         compose = true
     }
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.15"
+    }
+
+    packagingOptions {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
+    coreLibraryDesugaring("com.android.tools.desugar:jdk_desugar:2.0.4")
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
@@ -59,12 +61,13 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material3:material3:1.0.1")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.ui:ui")
+    implementation("androidx.navigation:navigation-compose:2.5.3")
     implementation("androidx.room:room-runtime:2.5.2")
-    kapt("androidx.room:room-compiler:2.5.2")
+    implementation("androidx.room:room-ktx:2.5.2")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("androidx.lifecycle:lifecycle-process:2.6.2")
@@ -75,4 +78,15 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.5.4")
     androidTestImplementation("androidx.compose.ui:ui-test-manifest:1.5.4")
+
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("io.mockk:mockk-android:1.13.5")
+    testImplementation("androidx.test:core-ktx:1.5.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }

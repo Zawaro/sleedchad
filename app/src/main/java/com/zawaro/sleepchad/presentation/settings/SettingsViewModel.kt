@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.AndroidViewModel
 
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+class SettingsViewModel(
+    application: Application,
+) : AndroidViewModel(application) {
     private val prefs = application.getSharedPreferences("settings", 0)
 
     val themeIndex = mutableIntStateOf(prefs.getInt("theme_index", 0))

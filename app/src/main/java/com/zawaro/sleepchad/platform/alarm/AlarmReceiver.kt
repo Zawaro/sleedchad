@@ -9,9 +9,13 @@ class AlarmReceiver : BroadcastReceiver() {
     companion object {
         const val TYPE_ERRANDS = 1
         const val TYPE_BEDTIME = 2
-        const val TYPE_WAKEUP   = 3
+        const val TYPE_WAKEUP = 3
 
-        fun intent(context: Context, type: Int, message: String): Intent =
+        fun intent(
+            context: Context,
+            type: Int,
+            message: String,
+        ): Intent =
             Intent(context, AlarmReceiver::class.java).apply {
                 putExtra(EXTRA_TYPE, type)
                 putExtra(EXTRA_MESSAGE, message)
@@ -19,9 +23,29 @@ class AlarmReceiver : BroadcastReceiver() {
 
         private const val EXTRA_TYPE = "type"
         private const val EXTRA_MESSAGE = "message"
+
+        fun intent(
+            context: Context,
+            type: Int,
+            message: String,
+            alarmId: Long,
+            label: String,
+        ): Intent =
+            Intent(context, AlarmReceiver::class.java).apply {
+                putExtra(EXTRA_TYPE, type)
+                putExtra(EXTRA_MESSAGE, message)
+                putExtra(EXTRA_ALARM_ID, alarmId)
+                putExtra(EXTRA_LABEL, label)
+            }
+
+        private const val EXTRA_ALARM_ID = "alarm_id"
+        private const val EXTRA_LABEL = "label"
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val msg = intent.getStringExtra(EXTRA_MESSAGE) ?: return
         NotificationHelper.show(
             context,
@@ -31,7 +55,7 @@ class AlarmReceiver : BroadcastReceiver() {
                 else -> NotificationHelper.CHANNEL_WAKEUP
             },
             "SleepChad",
-            msg
+            msg,
         )
     }
 }

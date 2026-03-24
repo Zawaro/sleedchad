@@ -1,15 +1,15 @@
 package com.zawaro.sleepchad.presentation.schedule
 
 import android.app.Application
-import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
+import com.zawaro.sleepchad.presentation.settings.SettingsViewModel
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
-import org.junit.Assert.assertEquals
-import com.zawaro.sleepchad.presentation.settings.SettingsViewModel
 
 class ScheduleScreenUITest {
     @get:Rule

@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     kotlin("android")
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 android {
@@ -35,7 +36,7 @@ android {
     buildFeatures {
         compose = true
     }
-    
+
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -68,6 +69,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.5.3")
     implementation("androidx.room:room-runtime:2.5.2")
     implementation("androidx.room:room-ktx:2.5.2")
+    ksp("androidx.room:room-compiler:2.5.2")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("androidx.lifecycle:lifecycle-process:2.6.2")

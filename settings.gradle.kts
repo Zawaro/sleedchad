@@ -1,6 +1,7 @@
 pluginManagement {
     plugins {
-        id("org.jlleitschuh.gradle.ktlint") version "14.0.0"
+        id("com.android.application") version "8.13.2" apply false
+        kotlin("android") version "1.9.25" apply false
     }
     repositories {
         gradlePluginPortal()

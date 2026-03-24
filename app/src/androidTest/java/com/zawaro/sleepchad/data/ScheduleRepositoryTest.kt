@@ -26,12 +26,36 @@ class ScheduleRepositoryTest {
     }
 
     @Test
-    fun testSaveAndRetrieveSchedule() =
+    fun testSaveAndRetrieveDefaultAlarm() =
         runBlocking {
-            val schedule = ScheduleEntity(1, 22 * 60 * 60 * 1000L, 6 * 60 * 60 * 1000L)
-            repo.saveSchedule(schedule)
+            val schedule = ScheduleEntity(
+                id = 0,
+                name = "Test Default",
+                isDefaultAlarm = true,
+                enabledDaysString = "1,2,3,4,5,6,7".toDaysSet().toDaysString(),
+                bedtimeMs = (22 * 60 * 60 * 1000L),
+                wakeupMs = (6 * 60 * 60 * 1000L)
+            )
+            repo.saveAlarm(schedule)
 
-            val retrieved = repo.getScheduleForDay(1)
-            assertEquals("Schedules should match", schedule, retrieved)
+            val retrieved = repo.getDefaultAlarm()
+            assertEquals("Default alarm should match", schedule, retrieved)
+        }
+
+    @Test
+    fun testSaveAndRetrieveExceptionAlarms() =
+        runBlocking {
+            val exceptionAlarm = ScheduleEntity(
+                id = 0,
+                name = "Weekend Alarm",
+                isDefaultAlarm = false,
+                enabledDaysString = "6,7".toDaysSet().toDaysString(),
+                bedtimeMs = (23 * 60 * 60 * 1000L),
+                wakeupMs = (8 * 60 * 60 * 1000L)
+            )
+            repo.saveAlarm(exceptionAlarm)
+
+            val retrieved = repo.getExceptionAlarms()
+            assertEquals("Exception alarms should match", listOf(exceptionAlarm), retrieved)
         }
 }

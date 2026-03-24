@@ -145,10 +145,18 @@ private fun dayOfWeekToCalendar(day: Int): Int =
 
 private fun nextOccurrence(dayOfWeek: Int, timeMs: Long): java.util.Calendar {
     val now = Calendar.getInstance()
+    
+    // Extract hour/minute from the epoch timestamp
+    val timeCal = Calendar.getInstance().apply {
+        timeInMillis = timeMs
+    }
+    val targetHour = timeCal.get(Calendar.HOUR_OF_DAY)
+    val targetMinute = timeCal.get(Calendar.MINUTE)
+    
     val target = Calendar.getInstance().apply {
         set(Calendar.DAY_OF_WEEK, dayOfWeek)
-        set(Calendar.HOUR_OF_DAY, (timeMs / 3600000).toInt())
-        set(Calendar.MINUTE, ((timeMs % 3600000) / 60000).toInt())
+        set(Calendar.HOUR_OF_DAY, targetHour)
+        set(Calendar.MINUTE, targetMinute)
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
     }

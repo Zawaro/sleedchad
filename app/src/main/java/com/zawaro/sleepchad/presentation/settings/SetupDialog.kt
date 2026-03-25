@@ -35,8 +35,9 @@ fun SetupDialog(
     var wakeUpHour by remember { mutableIntStateOf(7) }
     var wakeUpMinute by remember { mutableIntStateOf(0) }
     
-    var showHoursDialog by remember { mutableStateOf(false) }
-    var showMinutesDialog by remember { mutableStateOf(false) }
+    var showSleepHoursDialog by remember { mutableStateOf(false) }
+    var showSleepMinutesDialog by remember { mutableStateOf(false) }
+    var showErrandsDialog by remember { mutableStateOf(false) }
     
     var selectedErrandsTotalMinutes by remember { mutableIntStateOf(30) }
 
@@ -58,12 +59,12 @@ fun SetupDialog(
                     horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.padding(vertical = 4.dp)
                 ) {
-                    Button(onClick = { showHoursDialog = true }, 
+                    Button(onClick = { showSleepHoursDialog = true }, 
                            modifier = Modifier.padding(horizontal = 8.dp)) { 
                         Text("hrs") 
                     }
                     Spacer(modifier = Modifier.width(16.dp))
-                    Button(onClick = { showMinutesDialog = true }, 
+                    Button(onClick = { showSleepMinutesDialog = true }, 
                            modifier = Modifier.padding(horizontal = 8.dp)) { 
                         Text("mins") 
                     }
@@ -90,7 +91,7 @@ fun SetupDialog(
                     val minutesText = if (selectedErrandsTotalMinutes < 10) "0${selectedErrandsTotalMinutes}" else selectedErrandsTotalMinutes.toString()
                     Text("$minutesText m", style = MaterialTheme.typography.headlineLarge, 
                          modifier = Modifier.clickable {
-                             showMinutesDialog = true
+                             showErrandsDialog = true
                          })
                 }
 
@@ -111,8 +112,8 @@ fun SetupDialog(
             }
         },
         confirmButton = {
-            val targetSleepMinutes = (selectedSleepHours * 60) + selectedSleepMinutes
-            val errandsDurationMinutes = selectedErrandsTotalMinutes
+            val errandsDurationHours = selectedErrandsTotalMinutes / 60
+            val errandsDurationMins = selectedErrandsTotalMinutes % 60
             
             val wakeUpCalendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, wakeUpHour)
@@ -122,10 +123,10 @@ fun SetupDialog(
             TextButton(onClick = {
                 onSavePreferences(
                     selectedSleepHours, 
-                    targetSleepMinutes, 
+                    selectedSleepMinutes, 
                     wakeUpCalendar.timeInMillis,
-                    0, 
-                    errandsDurationMinutes
+                    errandsDurationHours,
+                    errandsDurationMins
                 )
             }) {
                 Text("Finish")
@@ -139,9 +140,9 @@ fun SetupDialog(
     )
 
     // Sleep hours spinner dialog (4-12 hours) - custom spinner dialog
-    if (showHoursDialog) {
+    if (showSleepHoursDialog) {
         AlertDialog(
-            onDismissRequest = { showHoursDialog = false },
+            onDismissRequest = { showSleepHoursDialog = false },
             title = { Text("Select Hours") },
             text = {
                 var index by remember { mutableIntStateOf(selectedSleepHours - 4) }
@@ -164,20 +165,20 @@ fun SetupDialog(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showHoursDialog = false }) { Text("OK") }
+                TextButton(onClick = { showSleepHoursDialog = false }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showHoursDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showSleepHoursDialog = false }) { Text("Cancel") }
             }
         )
     }
 
     // Sleep minutes spinner dialog (5-minute increments) - custom spinner
-    if (showMinutesDialog && selectedErrandsTotalMinutes == 30) {
+    if (showSleepMinutesDialog && selectedErrandsTotalMinutes == 30) {
         AlertDialog(
             onDismissRequest = { 
-                showHoursDialog = false
-                showMinutesDialog = false 
+                showSleepHoursDialog = false
+                showSleepMinutesDialog = false 
             },
             title = { Text("Select Minutes") },
             text = {
@@ -201,18 +202,18 @@ fun SetupDialog(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showHoursDialog = false; showMinutesDialog = false }) { Text("OK") }
+                TextButton(onClick = { showSleepHoursDialog = false; showSleepMinutesDialog = false }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showHoursDialog = false; showMinutesDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showSleepHoursDialog = false; showSleepMinutesDialog = false }) { Text("Cancel") }
             }
         )
     }
 
     // Errands minutes spinner dialog (5-minute increments, max 120m total) - custom spinner
-    if (showMinutesDialog && selectedErrandsTotalMinutes != 30) {
+    if (showErrandsDialog) {
         AlertDialog(
-            onDismissRequest = { showMinutesDialog = false },
+            onDismissRequest = { showErrandsDialog = false },
             title = { Text("Select Minutes") },
             text = {
                 var index by remember { mutableIntStateOf(selectedErrandsTotalMinutes / 5) }
@@ -242,10 +243,10 @@ fun SetupDialog(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showMinutesDialog = false }) { Text("OK") }
+                TextButton(onClick = { showErrandsDialog = false }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { showMinutesDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showErrandsDialog = false }) { Text("Cancel") }
             }
         )
     }

@@ -82,7 +82,7 @@ fun SettingsScreen(
                     Triple("24-hour", true, "e.g., 15:45")
                 )
 
-                val currentFormat = uiState.timeFormatPreference?.toBoolean()
+                val timeFormatPreference = uiState.timeFormatPreference ?: "system"
                 var expanded = remember { mutableStateOf(false) }
 
                 Card(
@@ -98,10 +98,10 @@ fun SettingsScreen(
                             onExpandedChange = { expanded.value = it }
                         ) {
                             OutlinedTextField(
-                                value = when (currentFormat) {
-                                    null -> "System Default"
-                                    true -> "24-hour"
-                                    false -> "12-hour"
+                                value = when (timeFormatPreference) {
+                                    "system" -> "System Default"
+                                    "true" -> "24-hour"
+                                    else -> "12-hour"
                                 },
                                 onValueChange = {},
                                 readOnly = true,
@@ -122,10 +122,10 @@ fun SettingsScreen(
                                     DropdownMenuItem(
                                         text = { Text(label) },
                                         onClick = {
-                                            preferencesViewModel.updateTimeFormat(value?.toString())
+                                            preferencesViewModel.updateTimeFormat(value?.toString() ?: "system")
                                             expanded.value = false
                                         },
-                                        enabled = currentFormat != value
+                                        enabled = timeFormatPreference != (value?.toString() ?: "system")
                                     )
                                 }
                             }

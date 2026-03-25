@@ -11,7 +11,7 @@ import com.zawaro.sleepchad.utils.toDaysString
 data class CustomAlarmEntity(
     @PrimaryKey(autoGenerate = true) var id: Long = 0,
     @ColumnInfo(name = "name") var name: String = "",
-    @ColumnInfo(name = "enabledDaysString") var enabledDaysString: String = "1234567",
+    @ColumnInfo(name = "enabledDaysString") var enabledDaysString: String = "1,2,3,4,5,6,7",
     @ColumnInfo(name = "bedtimeMs") var bedtimeMs: Long? = null,
     @ColumnInfo(name = "wakeupMs") var wakeupMs: Long? = null,
     @ColumnInfo(name = "targetSleepDurationMinutes") var targetSleepDurationMinutes: Int? = null,

@@ -59,15 +59,11 @@ class MainActivity : ComponentActivity() {
         val createExceptionAlarmUseCase = CreateExceptionAlarmUseCase(customAlarmRepo)
         val deleteExceptionAlarmUseCase = DeleteExceptionAlarmUseCase(customAlarmRepo)
         
-        val scheduleFactory = ScheduleViewModelFactory(
-            getScheduleUseCase = getScheduleUseCase,
-            saveScheduleUseCase = saveScheduleUseCase,
-            scheduleAlarmsUseCase = scheduleAlarmsUseCase,
+        val scheduleFactory = com.zawaro.sleepchad.presentation.schedule.ScheduleViewModelFactory(
+            getSchedule = getScheduleUseCase,
+            saveSchedule = saveScheduleUseCase,
+            scheduleAlarms = scheduleAlarmsUseCase,
             errandRepository = errandRepository,
-            getUserPreferencesUseCase = getUserPrefs,
-            getExceptionAlarmsUseCase = getExceptionAlarmsUseCase,
-            createExceptionAlarmUseCase = createExceptionAlarmUseCase,
-            deleteExceptionAlarmUseCase = deleteExceptionAlarmUseCase
         )
         
         val preferencesFactory = PreferencesViewModelFactory(getUserPrefs, saveUserPrefs, recordBedtime, recordWakeUp, getLastNightSession)
@@ -95,29 +91,6 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-    }
-}
-
-class ScheduleViewModelFactory(
-    private val getScheduleUseCase: GetScheduleUseCase,
-    private val saveScheduleUseCase: SaveScheduleUseCase,
-    private val scheduleAlarmsUseCase: ScheduleAlarmsUseCase,
-    private val errandRepository: ErrandRepository,
-    private val getUserPreferencesUseCase: GetUserPreferencesUseCase? = null,
-    private val getExceptionAlarmsUseCase: GetExceptionAlarmsUseCase? = null,
-    private val createExceptionAlarmUseCase: CreateExceptionAlarmUseCase? = null,
-    private val deleteExceptionAlarmUseCase: DeleteExceptionAlarmUseCase? = null,
-) : androidx.lifecycle.ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ScheduleViewModel::class.java)) {
-            return ScheduleViewModel(
-                getScheduleUseCase, saveScheduleUseCase, scheduleAlarmsUseCase, errandRepository,
-                getUserPreferencesUseCase, getExceptionAlarmsUseCase, 
-                createExceptionAlarmUseCase, deleteExceptionAlarmUseCase
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 

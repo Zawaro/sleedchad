@@ -5,6 +5,8 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.zawaro.sleepchad.MainActivity
 import com.zawaro.sleepchad.data.AppDatabase
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
@@ -73,8 +75,8 @@ class MainActivityIntegrityTest {
         )
         
         runBlocking {
-            database.scheduleDao().insertSchedule(scheduleEntity)
-            val retrieved = database.scheduleDao().getDefaultAlarm()
+            database.scheduleDao().insert(scheduleEntity)
+            val retrieved = database.scheduleDao().getDefaultSchedule()
             assertNotNull("Should be able to insert and retrieve schedule", retrieved)
             assertEquals("Default alarm should match inserted entity", scheduleEntity.id, retrieved?.id)
         }

@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import java.util.Calendar
+import java.util.Locale
 
 @Composable
 fun WakeUpTimeDialog(
@@ -24,7 +25,7 @@ fun WakeUpTimeDialog(
     onDismissRequest: () -> Unit,
     onSave: (epochMs: Long) -> Unit
 ) {
-    val calendar = Calendar.getInstance().apply {
+    val calendar = Calendar.getInstance(Locale.US).apply {
         timeInMillis = initialEpochMs
     }
 
@@ -43,7 +44,7 @@ fun WakeUpTimeDialog(
                     Column(horizontalAlignment = Alignment.End) {
                         Text("Hour")
                         Text(
-                            text = selectedHourState.value.toString(),
+                            text = "${selectedHourState.value}",
                             style = MaterialTheme.typography.headlineLarge
                         )
                     }
@@ -53,7 +54,7 @@ fun WakeUpTimeDialog(
                     Column(horizontalAlignment = Alignment.Start) {
                         Text("Minute")
                         Text(
-                            text = selectedMinuteState.value.toString(),
+                            text = "${selectedMinuteState.value}",
                             style = MaterialTheme.typography.headlineLarge
                         )
                     }
@@ -99,7 +100,7 @@ fun WakeUpTimeDialog(
             }
         },
         confirmButton = {
-            val newDate = Calendar.getInstance().apply {
+            val newDate = Calendar.getInstance(Locale.US).apply {
                 timeInMillis = initialEpochMs
                 set(Calendar.HOUR_OF_DAY, selectedHourState.value)
                 set(Calendar.MINUTE, selectedMinuteState.value)

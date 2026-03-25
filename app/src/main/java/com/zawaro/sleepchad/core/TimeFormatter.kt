@@ -18,7 +18,7 @@ object TimeFormatter {
         if (timeMs == null) return "--:--"
 
         // Check if this is epoch milliseconds or time-of-day in ms
-        val calendar = Calendar.getInstance().apply {
+        val calendar = Calendar.getInstance(Locale.US).apply {
             // If value is less than a day's worth of ms, treat as time-only
             if (timeMs < 86400000L) {
                 // Time-only value: set to today's date
@@ -36,7 +36,7 @@ object TimeFormatter {
         val shouldUse24Hour = use24HourFormat ?: isSystemUsing24HourFormat(context)
         val pattern = if (shouldUse24Hour) TIME_FORMAT_24H else TIME_FORMAT_12H
 
-        return SimpleDateFormat(pattern, Locale.getDefault()).format(calendar.time)
+        return SimpleDateFormat(pattern, Locale.US).format(calendar.time)
     }
 
     fun formatTimeWithTimeZone(
@@ -46,7 +46,7 @@ object TimeFormatter {
     ): String {
         if (timeMs == null) return "--:--"
 
-        val calendar = Calendar.getInstance().apply {
+        val calendar = Calendar.getInstance(Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")
 
             // Handle time-only vs epoch timestamp
@@ -64,7 +64,7 @@ object TimeFormatter {
         val shouldUse24Hour = use24HourFormat ?: isSystemUsing24HourFormat(context)
         val pattern = if (shouldUse24Hour) TIME_FORMAT_24H else TIME_FORMAT_12H
 
-        return SimpleDateFormat(pattern, Locale.getDefault()).format(calendar.time)
+        return SimpleDateFormat(pattern, Locale.US).format(calendar.time)
     }
 
     fun parseTime(
@@ -116,7 +116,7 @@ object TimeFormatter {
     }
 
     fun getMinutesFromTime(timeMs: Long): Int {
-        val calendar = Calendar.getInstance().apply {
+        val calendar = Calendar.getInstance(Locale.US).apply {
             // Handle time-only vs epoch timestamp
             if (timeMs < 86400000L) {
                 set(Calendar.HOUR_OF_DAY, 0)

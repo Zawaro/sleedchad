@@ -51,6 +51,7 @@ fun SettingsScreen(
 ) {
     val uiState by preferencesViewModel.preferences.collectAsState()
 
+    @Suppress("DEPRECATION")
     Scaffold(
         topBar = {
             androidx.compose.material3.TopAppBar(

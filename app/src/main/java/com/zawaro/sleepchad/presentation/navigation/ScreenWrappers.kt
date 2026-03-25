@@ -51,14 +51,15 @@ import com.zawaro.sleepchad.presentation.settings.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("DEPRECATION")
 fun ScheduleScreenWrapper(
     viewModel: ScheduleViewModel,
     preferencesViewModel: PreferencesViewModel,
-    settingsViewModel: SettingsViewModel,
+    @Suppress("UNUSED_PARAMETER") settingsViewModel: SettingsViewModel,
     onNavigateToSettings: () -> Unit,
     onBottomBarNavigate: (String) -> Unit
 ) {
-    val exceptionAlarms = remember { mutableStateOf<List<com.zawaro.sleepchad.data.CustomAlarmEntity>>(emptyList()) }
+    val exceptionAlarms = remember { mutableStateOf(emptyList<com.zawaro.sleepchad.data.CustomAlarmEntity>()) }
     LaunchedEffect(viewModel.exceptionAlarms) {
         viewModel.exceptionAlarms.collect { exceptionAlarms.value = it }
     }
@@ -202,7 +203,9 @@ fun SettingsScreenWrapper(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = onClose) {
+                        @Suppress("DEPRECATION")
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        // TODO: Migrate to Icons.AutoMirrored.Filled.ArrowBack when Material3 updates
                     }
                 },
                 modifier = Modifier.statusBarsPadding()
@@ -222,7 +225,7 @@ fun SettingsScreenWrapper(
 
             item {
                 SettingsSection(title = "Display & Time") {
-                    val uiState = preferencesViewModel.preferences.value
+                    val uiState = preferencesViewModel.preferences.collectAsState().value
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -232,7 +235,7 @@ fun SettingsScreenWrapper(
                             Text("Time Format", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
                             
                             val timeFormatOptions = listOf("System Default", "12-hour (AM/PM)", "24-hour")
-                            val expandedState = mutableStateOf(false)
+                            val expandedState = remember { mutableStateOf(false) }
                             
                             ExposedDropdownMenuBox(
                                 expanded = expandedState.value,
@@ -287,28 +290,28 @@ fun SettingsScreenWrapper(
                     ) {
                         Column(modifier = Modifier.padding(8.dp)) {
                             SettingsListItemWithToggle(
-                                leadingIcon = Icons.Default.NotificationsActive,
-                                title = "Push Notifications",
-                                subtitle = "Wake up alarms and wind-down alerts.",
-                                enabledState = mutableStateOf(true)
-                            )
+                                 leadingIcon = Icons.Default.NotificationsActive,
+                                 title = "Push Notifications",
+                                 subtitle = "Wake up alarms and wind-down alerts.",
+enabledState = remember { mutableStateOf(true) }
+                             )
 
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                              HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                            SettingsListItemWithToggle(
-                                leadingIcon = Icons.Default.Insights,
-                                title = "Weekly Sleep Report",
-                                subtitle = "Personalized performance analysis.",
-                                enabledState = mutableStateOf(false)
-                            )
+                              SettingsListItemWithToggle(
+                                  leadingIcon = Icons.Default.Insights,
+                                  title = "Weekly Sleep Report",
+                                  subtitle = "Personalized performance analysis.",
+                                  enabledState = remember { mutableStateOf(false) }
+                             )
 
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                              HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                            SettingsListItemWithToggle(
-                                leadingIcon = Icons.Default.Mail,
-                                title = "Newsletter",
-                                subtitle = "Tips for better sleep hygiene.",
-                                enabledState = mutableStateOf(false)
+                              SettingsListItemWithToggle(
+                                  leadingIcon = Icons.Default.Mail,
+                                  title = "Newsletter",
+                                  subtitle = "Tips for better sleep hygiene.",
+                                  enabledState = remember { mutableStateOf(false) }
                             )
                         }
                     }
@@ -339,6 +342,7 @@ fun SettingsScreenWrapper(
 
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
+                            @Suppress("DEPRECATION")
                             SettingsListItem(
                                 leadingIcon = Icons.Default.Logout,
                                 title = "Logout",
@@ -450,6 +454,7 @@ private fun SettingsListItemWithToggle(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("DEPRECATION")
 fun StatisticsScreenPlaceholder(onBackToSchedule: () -> Unit) {
     Scaffold(
         topBar = {

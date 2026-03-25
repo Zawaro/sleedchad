@@ -1,6 +1,7 @@
 package com.zawaro.sleepchad.data
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 class SleepSessionRepository(
@@ -17,7 +18,7 @@ class SleepSessionRepository(
     }
 
     suspend fun getByDate(date: String): SleepSessionEntity? = withContext(Dispatchers.IO) {
-        sleepSessionDao.getSessionByDate(date)
+        sleepSessionDao.getSessionByDate(date).first()
     }
 
     fun update(session: SleepSessionEntity) {

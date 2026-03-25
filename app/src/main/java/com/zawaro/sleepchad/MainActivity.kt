@@ -14,11 +14,16 @@ import com.zawaro.sleepchad.domain.usecases.ScheduleAlarmsUseCase
 import com.zawaro.sleepchad.domain.usecases.RecordBedtimeUseCase
 import com.zawaro.sleepchad.domain.usecases.RecordWakeUpUseCase
 import com.zawaro.sleepchad.domain.usecases.GetLastNightSleepSessionUseCase
+import com.zawaro.sleepchad.domain.usecases.GetExceptionAlarmsUseCase
+import com.zawaro.sleepchad.domain.usecases.CreateExceptionAlarmUseCase
+import com.zawaro.sleepchad.domain.usecases.DeleteExceptionAlarmUseCase
 import com.zawaro.sleepchad.data.SleepSessionRepository
 import com.zawaro.sleepchad.data.ScheduleRepository
 import com.zawaro.sleepchad.domain.repository.UserPreferencesRepository
+import com.zawaro.sleepchad.data.ErrandRepository
 import com.zawaro.sleepchad.domain.usecases.GetUserPreferencesUseCase
 import com.zawaro.sleepchad.domain.usecases.SaveUserPreferencesUseCase
+import com.zawaro.sleepchad.presentation.statistics.StatisticsViewModel
 import com.zawaro.sleepchad.presentation.navigation.SleepChadNavGraph
 import com.zawaro.sleepchad.presentation.schedule.ScheduleViewModel
 import com.zawaro.sleepchad.presentation.settings.PreferencesViewModel
@@ -49,14 +54,31 @@ class MainActivity : ComponentActivity() {
         val recordWakeUp = RecordWakeUpUseCase(userPrefsRepo)
         val getLastNightSession = GetLastNightSleepSessionUseCase(userPrefsRepo)
         
-val scheduleFactory = ViewModelFactory(application)
+        val customAlarmRepo = com.zawaro.sleepchad.domain.repository.CustomAlarmRepository(repository)
+        val getExceptionAlarmsUseCase = GetExceptionAlarmsUseCase(customAlarmRepo)
+        val createExceptionAlarmUseCase = CreateExceptionAlarmUseCase(customAlarmRepo)
+        val deleteExceptionAlarmUseCase = DeleteExceptionAlarmUseCase(customAlarmRepo)
+        
+        val scheduleFactory = ScheduleViewModelFactory(
+            getScheduleUseCase = getScheduleUseCase,
+            saveScheduleUseCase = saveScheduleUseCase,
+            scheduleAlarmsUseCase = scheduleAlarmsUseCase,
+            errandRepository = errandRepository,
+            getUserPreferencesUseCase = getUserPrefs,
+            getExceptionAlarmsUseCase = getExceptionAlarmsUseCase,
+            createExceptionAlarmUseCase = createExceptionAlarmUseCase,
+            deleteExceptionAlarmUseCase = deleteExceptionAlarmUseCase
+        )
+        
         val preferencesFactory = PreferencesViewModelFactory(getUserPrefs, saveUserPrefs, recordBedtime, recordWakeUp, getLastNightSession)
+        val statisticsViewModelFactory = StatisticsViewModelFactory(database)
 
         setContent {
             SleepChadAppTheme {
                 val scheduleViewModel: ScheduleViewModel = viewModel(factory = scheduleFactory)
                 val preferencesViewModel: PreferencesViewModel = viewModel(factory = preferencesFactory)
                 val settingsViewModel = viewModel<SettingsViewModel>()
+                val statisticsViewModel: StatisticsViewModel = viewModel(factory = statisticsViewModelFactory)
                 
                 val navController = rememberNavController()
 
@@ -68,10 +90,34 @@ val scheduleFactory = ViewModelFactory(application)
                     scheduleViewModel = scheduleViewModel,
                     preferencesViewModel = preferencesViewModel,
                     settingsViewModel = settingsViewModel,
+                    statisticsViewModel = statisticsViewModel,
                     navController = navController
                 )
             }
         }
+    }
+}
+
+class ScheduleViewModelFactory(
+    private val getScheduleUseCase: GetScheduleUseCase,
+    private val saveScheduleUseCase: SaveScheduleUseCase,
+    private val scheduleAlarmsUseCase: ScheduleAlarmsUseCase,
+    private val errandRepository: ErrandRepository,
+    private val getUserPreferencesUseCase: GetUserPreferencesUseCase? = null,
+    private val getExceptionAlarmsUseCase: GetExceptionAlarmsUseCase? = null,
+    private val createExceptionAlarmUseCase: CreateExceptionAlarmUseCase? = null,
+    private val deleteExceptionAlarmUseCase: DeleteExceptionAlarmUseCase? = null,
+) : androidx.lifecycle.ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ScheduleViewModel::class.java)) {
+            return ScheduleViewModel(
+                getScheduleUseCase, saveScheduleUseCase, scheduleAlarmsUseCase, errandRepository,
+                getUserPreferencesUseCase, getExceptionAlarmsUseCase, 
+                createExceptionAlarmUseCase, deleteExceptionAlarmUseCase
+            ) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
 
@@ -86,6 +132,16 @@ class PreferencesViewModelFactory(
     override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(PreferencesViewModel::class.java)) {
             return PreferencesViewModel(getUserPreferences, saveUserPreferences, recordBedtime, recordWakeUp, getLastNightSession) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class StatisticsViewModelFactory(private val database: AppDatabase) : androidx.lifecycle.ViewModelProvider.Factory {
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(StatisticsViewModel::class.java)) {
+            return StatisticsViewModel(database) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

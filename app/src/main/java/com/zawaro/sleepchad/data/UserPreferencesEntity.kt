@@ -10,9 +10,11 @@ data class UserPreferencesEntity(
     var wakeUpTimeMs: Long? = null,
     var errandsDurationMinutes: Int? = null,
     var timeFormatPreference: String? = null,
+    var themeIndex: Int = 0,
 ) {
     companion object {
         const val DEFAULT_ID = 1
         const val DEFAULT_TIME_FORMAT = "system"
+        const val DEFAULT_THEME_INDEX = 0
     }
 }

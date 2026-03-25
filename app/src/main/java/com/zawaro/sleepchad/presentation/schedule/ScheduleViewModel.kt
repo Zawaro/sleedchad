@@ -61,6 +61,7 @@ class ScheduleViewModel(
         viewModelScope.launch { loadAll() }
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun updateThemeIndex(index: Int) {
         // Theme handling - placeholder for now
     }
@@ -111,7 +112,7 @@ class ScheduleViewModel(
             wakeupMs = wakeupMs,
         )
 
-        val newId = saveSchedule(alarm)
+        saveSchedule(alarm)
         
         loadAll()
     }
@@ -128,8 +129,8 @@ class ScheduleViewModel(
         val totalMinutes = (targetSleepHours * 60) + targetSleepMinutes
         
         // Calculate bedtime by subtracting sleep duration from wake time
-        var bedHour = 0
-        var bedMinute = 0
+        var bedHour: Int
+        var bedMinute: Int
         
         if (totalMinutes < 1440 && wakeUpTimeMs != null) {
             val wakeCal = java.util.Calendar.getInstance().apply { timeInMillis = wakeUpTimeMs }

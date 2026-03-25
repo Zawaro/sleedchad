@@ -60,7 +60,7 @@ class PreferencesViewModel(
         val lastNightSession = getLastNightSession?.let { it.invoke() }
 
         if (entity != null && entity.targetSleepDurationMinutes != null) {
-            _preferences.value = UserPreferencesUiModel.fromEntity(entity, lastNightSession ?: null)
+            _preferences.value = UserPreferencesUiModel.fromEntity(entity, lastNightSession)
             _onboardingComplete.value = true
         } else {
             _preferences.value = UserPreferencesUiModel.fromEntity(entity, lastNightSession)

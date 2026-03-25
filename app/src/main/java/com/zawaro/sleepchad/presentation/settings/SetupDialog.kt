@@ -27,7 +27,7 @@ fun SetupDialog(
     onDismissRequest: () -> Unit,
     onSavePreferences: (targetSleepHours: Int, targetSleepMinutes: Int, wakeUpTimeMs: Long, errandsDurationHours: Int, errandsDurationMinutes: Int) -> Unit
 ) {
-    val context = LocalContext.current as Context
+    val context = LocalContext.current
     
     var selectedSleepHours by remember { mutableIntStateOf(8) }
     var selectedSleepMinutes by remember { mutableIntStateOf(0) }
@@ -119,19 +119,13 @@ fun SetupDialog(
                 set(Calendar.MINUTE, wakeUpMinute)
             }
             
-            val bedtimeCalendar = Calendar.getInstance().apply {
-                timeInMillis = wakeUpCalendar.timeInMillis
-                add(Calendar.MINUTE, -targetSleepMinutes)
-                add(Calendar.MINUTE, -errandsDurationMinutes)
-            }
-
             TextButton(onClick = {
                 onSavePreferences(
                     selectedSleepHours, 
-                    selectedSleepMinutes, 
+                    targetSleepMinutes, 
                     wakeUpCalendar.timeInMillis,
                     0, 
-                    selectedErrandsTotalMinutes
+                    errandsDurationMinutes
                 )
             }) {
                 Text("Finish")

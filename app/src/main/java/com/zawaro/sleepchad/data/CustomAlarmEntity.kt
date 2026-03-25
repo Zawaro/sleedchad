@@ -4,6 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
+import com.zawaro.sleepchad.utils.toDaysSet
+import com.zawaro.sleepchad.utils.toDaysString
 
 @Entity(tableName = "custom_alarms")
 data class CustomAlarmEntity(
@@ -16,17 +18,15 @@ data class CustomAlarmEntity(
     @ColumnInfo(name = "errandsDurationMinutes") var errandsDurationMinutes: Int? = null,
 ) {
     companion object {
-        fun toDaysString(set: Set<Int>): String = 
-            set.sorted().joinToString(",") { it.toString() }
+        fun toDaysString(set: Set<Int>): String = set.sorted().joinToString(",") { it.toString() }
             
-        fun toDaysSet(string: String): Set<Int> =
-            string.split(",").filter { it.isNotEmpty() }.mapNotNull { it.toIntOrNull() }.toSet()
+        fun toDaysSet(string: String): Set<Int> = string.split(",").filter { it.isNotEmpty() }.mapNotNull { it.toIntOrNull() }.toSet()
     }
 }
 
-// Extension functions outside companion object
-fun Set<Int>.toDaysString(): String = 
-    sorted().joinToString(",") { it.toString() }
-    
-fun String.toDaysSet(): Set<Int> =
-    split(",").filter { it.isNotEmpty() }.mapNotNull { it.toIntOrNull() }.toSet()
+@Suppress("UNUSED_PARAMETER")
+@Deprecated("Use extension functions from com.zawaro.sleepchad.utils package", ReplaceWith("customAlarmEntity.enabledDaysString.toDaysSet()"))
+fun String.toDaysSetLegacy(): Set<Int> = this.toDaysSet()
+
+@Deprecated("Use companion object method or utils extension", ReplaceWith("CustomAlarmEntity.toDaysSet(set)"))
+fun Set<Int>.toDaysStringLegacy(): String = this.toDaysString()

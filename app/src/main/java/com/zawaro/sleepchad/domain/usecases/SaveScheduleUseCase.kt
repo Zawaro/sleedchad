@@ -3,6 +3,7 @@ package com.zawaro.sleepchad.domain.usecases
 import com.zawaro.sleepchad.data.ErrandRepository
 import com.zawaro.sleepchad.data.ScheduleEntity
 import com.zawaro.sleepchad.data.ScheduleRepository
+import com.zawaro.sleepchad.utils.toDaysSet
 
 /**
  * Use‑case for persisting an alarm (default or exception).
@@ -43,9 +44,6 @@ class SaveScheduleUseCase(
     suspend fun deleteErrand(id: Long) {
         errandRepository.deleteById(id)
     }
-
-    private fun String.toDaysSet(): Set<Int> =
-        split(",").filter { it.isNotEmpty() }.mapNotNull { it.toIntOrNull() }.toSet()
 
     /**
      * Saves an exception alarm and checks if it would cover ALL wake-up anchor days.

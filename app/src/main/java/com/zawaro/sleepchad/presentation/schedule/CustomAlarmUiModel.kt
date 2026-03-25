@@ -6,4 +6,7 @@ data class CustomAlarmUiModel(
     val enabledDays: Set<Int>,
     val targetSleepDurationMinutes: Int?,
     val wakeupMs: Long? = null,
+    val inheritsTargetSleep: Boolean = false,
+    val inheritsWakeTime: Boolean = false,
+    val hasIllogicalBedtime: Boolean = false
 )

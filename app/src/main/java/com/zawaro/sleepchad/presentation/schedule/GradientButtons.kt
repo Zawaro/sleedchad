@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,30 +62,20 @@ fun GradientButton(
 fun GradientOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    colors: List<Color>,
     content: @Composable () -> Unit
 ) {
-    val gradientBrush = Brush.linearGradient(colors = colors)
-    
-    OutlinedButton(
+    Button(
         onClick = onClick,
-        modifier = modifier.graphicsLayer { alpha = 1f }.padding(vertical = 4.dp),
-        colors = ButtonDefaults.outlinedButtonColors().copy(containerColor = Color.Transparent),
+        modifier = modifier.padding(vertical = 4.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         shape = RoundedCornerShape(50.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(gradientBrush, RoundedCornerShape(50.dp))
-                .padding(vertical = 12.dp, horizontal = 8.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                content()
-            }
+            content()
         }
     }
 }

@@ -14,11 +14,5 @@ data class ScheduleEntity(
 ) {
     companion object {
         const val DEFAULT_ALARM_NAME = "Default"
-        
-        fun Set<Int>.toDaysString(): String = 
-            sorted().joinToString(",") { it.toString() }
-            
-        fun String.toDaysSet(): Set<Int> =
-            split(",").filter { it.isNotEmpty() }.mapNotNull { it.toIntOrNull() }.toSet()
     }
 }

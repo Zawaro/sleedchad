@@ -17,7 +17,7 @@ class ScheduleRepositoryTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
-        repo = ScheduleRepository(db.scheduleDao())
+        repo = ScheduleRepository(db.scheduleDao(), db.errandDao())
     }
 
     @After
@@ -32,7 +32,7 @@ class ScheduleRepositoryTest {
                 id = 0,
                 name = "Test Default",
                 isDefaultAlarm = true,
-                enabledDaysString = "1,2,3,4,5,6,7".toDaysSet().toDaysString(),
+                enabledDaysString = setOf(1, 2, 3, 4, 5, 6, 7).joinToString(","),
                 bedtimeMs = (22 * 60 * 60 * 1000L),
                 wakeupMs = (6 * 60 * 60 * 1000L)
             )
@@ -49,7 +49,7 @@ class ScheduleRepositoryTest {
                 id = 0,
                 name = "Weekend Alarm",
                 isDefaultAlarm = false,
-                enabledDaysString = "6,7".toDaysSet().toDaysString(),
+                enabledDaysString = setOf(6, 7).joinToString(","),
                 bedtimeMs = (23 * 60 * 60 * 1000L),
                 wakeupMs = (8 * 60 * 60 * 1000L)
             )

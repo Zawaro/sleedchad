@@ -8,14 +8,9 @@ import androidx.core.content.ContextCompat
 import com.zawaro.sleepchad.data.ErrandDao
 import com.zawaro.sleepchad.data.ScheduleEntity
 import com.zawaro.sleepchad.data.ScheduleRepository
+import com.zawaro.sleepchad.utils.toDaysSet
 import kotlinx.coroutines.withContext
 import java.util.Calendar
-
-fun Set<Int>.toDaysString(): String = 
-    sorted().joinToString(",") { it.toString() }
-
-fun String.toDaysSet(): Set<Int> =
-    split(",").filter { it.isNotEmpty() }.mapNotNull { it.toIntOrNull() }.toSet()
 
 /** Schedules all alarms based on the provided schedules. */
 suspend fun scheduleAllAlarms(

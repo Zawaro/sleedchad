@@ -10,6 +10,7 @@ object NotificationHelper {
     const val CHANNEL_ERRANDS = "channel_errands"
     const val CHANNEL_BEDTIME = "channel_bedtime"
     const val CHANNEL_WAKEUP = "channel_wakeup"
+    const val WAKE_UP_CHANNEL = "wake_up_channel"
 
     fun createChannels(context: Context) {
         val channels =
@@ -17,6 +18,7 @@ object NotificationHelper {
                 NotificationChannel(CHANNEL_ERRANDS, "Errands", NotificationManager.IMPORTANCE_DEFAULT),
                 NotificationChannel(CHANNEL_BEDTIME, "Bedtime", NotificationManager.IMPORTANCE_DEFAULT),
                 NotificationChannel(CHANNEL_WAKEUP, "Wakeup", NotificationManager.IMPORTANCE_DEFAULT),
+                NotificationChannel(WAKE_UP_CHANNEL, "Wake Up Actions", NotificationManager.IMPORTANCE_HIGH),
             )
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         channels.forEach { channel ->

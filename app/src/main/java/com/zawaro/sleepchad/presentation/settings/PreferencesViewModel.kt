@@ -18,11 +18,13 @@ data class UserPreferencesUiModel(
     val wakeUpTimeMs: Long? = null,
     val errandsDurationMinutes: Int? = null,
     val timeFormatPreference: String? = null,
+    val themeIndex: Int = 0,
     val lastNightEstimatedSleepMinutes: Int? = null,
 ) {
     companion object {
         fun fromEntity(entity: UserPreferencesEntity?, lastNightSession: com.zawaro.sleepchad.data.SleepSessionEntity?): UserPreferencesUiModel {
             entity ?: return UserPreferencesUiModel(
+                themeIndex = 0,
                 lastNightEstimatedSleepMinutes = lastNightSession?.estimatedSleepDurationMinutes
             )
             
@@ -31,6 +33,7 @@ data class UserPreferencesUiModel(
                 wakeUpTimeMs = entity.wakeUpTimeMs,
                 errandsDurationMinutes = entity.errandsDurationMinutes,
                 timeFormatPreference = entity.timeFormatPreference,
+                themeIndex = entity.themeIndex,
                 lastNightEstimatedSleepMinutes = lastNightSession?.estimatedSleepDurationMinutes
             )
         }
@@ -101,7 +104,8 @@ class PreferencesViewModel(
         targetSleepDurationMinutes: Int?,
         wakeUpTimeMs: Long?,
         errandsDurationMinutes: Int?,
-        timeFormatPreference: String?
+        timeFormatPreference: String?,
+        themeIndex: Int = 0
     ) {
         val current = getUserPreferences() ?: UserPreferencesEntity(id = 1)
         
@@ -109,7 +113,8 @@ class PreferencesViewModel(
             targetSleepDurationMinutes = targetSleepDurationMinutes ?: current.targetSleepDurationMinutes,
             wakeUpTimeMs = wakeUpTimeMs ?: current.wakeUpTimeMs,
             errandsDurationMinutes = errandsDurationMinutes ?: current.errandsDurationMinutes,
-            timeFormatPreference = timeFormatPreference ?: current.timeFormatPreference ?: UserPreferencesEntity.DEFAULT_TIME_FORMAT
+            timeFormatPreference = timeFormatPreference ?: current.timeFormatPreference ?: UserPreferencesEntity.DEFAULT_TIME_FORMAT,
+            themeIndex = themeIndex
         )
 
         if (current.id == 0) {
@@ -189,6 +194,19 @@ class PreferencesViewModel(
                 wakeUpTimeMs = current.wakeUpTimeMs,
                 errandsDurationMinutes = current.errandsDurationMinutes,
                 timeFormatPreference = use24Hour?.toString()
+            )
+        }
+    }
+
+    fun updateThemeIndex(themeIndex: Int) {
+        viewModelScope.launch {
+            val current = getUserPreferences() ?: UserPreferencesEntity(id = 1)
+            savePreferences(
+                targetSleepDurationMinutes = current.targetSleepDurationMinutes,
+                wakeUpTimeMs = current.wakeUpTimeMs,
+                errandsDurationMinutes = current.errandsDurationMinutes,
+                timeFormatPreference = current.timeFormatPreference,
+                themeIndex = themeIndex
             )
         }
     }

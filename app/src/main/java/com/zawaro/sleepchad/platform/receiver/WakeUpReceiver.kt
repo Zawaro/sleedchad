@@ -23,17 +23,30 @@ class WakeUpReceiver : BroadcastReceiver() {
             val currentTimeMillis = System.currentTimeMillis()
             val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date(currentTimeMillis))
             
-            val sessionEntity = SleepSessionEntity(
-                id = 0,
-                date = dateStr,
-                scheduledBedtimeMs = null,
-                actualBedtimeMs = null,
-                wakeUpTimeMs = currentTimeMillis,
-                actualWakeTimeMs = currentTimeMillis,
-                estimatedSleepDurationMinutes = null
-            )
+            val existingSession = sleepSessionRepository.getByDate(dateStr)
             
-            sleepSessionRepository.insert(sessionEntity)
+            val sessionEntity = if (existingSession != null) {
+                existingSession.copy(
+                    wakeUpTimeMs = currentTimeMillis,
+                    actualWakeTimeMs = currentTimeMillis
+                )
+            } else {
+                SleepSessionEntity(
+                    id = 0L,
+                    date = dateStr,
+                    scheduledBedtimeMs = null,
+                    actualBedtimeMs = null,
+                    wakeUpTimeMs = currentTimeMillis,
+                    actualWakeTimeMs = currentTimeMillis,
+                    estimatedSleepDurationMinutes = null
+                )
+            }
+            
+            if (existingSession == null) {
+                sleepSessionRepository.insert(sessionEntity)
+            } else {
+                sleepSessionRepository.update(sessionEntity)
+            }
         }
     }
 }

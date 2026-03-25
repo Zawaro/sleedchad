@@ -61,8 +61,12 @@ class StatisticsViewModel(
                     database.scheduleDao().getUserPreferences()
                 }
                 val targetSleepDurationMinutes = userPrefs?.targetSleepDurationMinutes ?: 480
-                val lastNightSleepMinutes: Int? = latestSession.estimatedSleepDurationMinutes?.toInt() 
-                    ?: (((latestSession.actualWakeTimeMs ?: latestSession.wakeUpTimeMs ?: System.currentTimeMillis()) - (latestSession.actualBedtimeMs ?: 0)) / 60000L).toInt()
+                val lastNightSleepMinutes: Int? = if (latestSession.actualBedtimeMs != null || latestSession.scheduledBedtimeMs != null) {
+                    latestSession.estimatedSleepDurationMinutes?.toInt() 
+                        ?: (((latestSession.actualWakeTimeMs ?: latestSession.wakeUpTimeMs ?: System.currentTimeMillis()) - (latestSession.actualBedtimeMs ?: latestSession.scheduledBedtimeMs ?: 0)) / 60000L).toInt()
+                } else {
+                    null
+                }
 
                 var percentage: Int? = null
                 if (lastNightSleepMinutes != null) {
@@ -100,7 +104,10 @@ class StatisticsViewModel(
 
             if (sessions.isNotEmpty()) {
                 val totalMinutes = sessions.sumOf { session ->
-                    session.estimatedSleepDurationMinutes?.toLong() ?: ((session.actualWakeTimeMs ?: session.wakeUpTimeMs ?: System.currentTimeMillis()) - (session.actualBedtimeMs ?: 0)) / 60000 
+                    if (session.actualBedtimeMs != null || session.scheduledBedtimeMs != null) {
+                        session.estimatedSleepDurationMinutes?.toLong() 
+                            ?: ((session.actualWakeTimeMs ?: session.wakeUpTimeMs ?: System.currentTimeMillis()) - (session.actualBedtimeMs ?: session.scheduledBedtimeMs ?: 0)) / 60000 
+                    } else 0L
                 }
                 
                 val avgHours = totalMinutes.toDouble() / sessions.size / 60
@@ -129,7 +136,10 @@ class StatisticsViewModel(
 
             if (sessions.isNotEmpty()) {
                 val totalMinutes = sessions.sumOf { session ->
-                    session.estimatedSleepDurationMinutes?.toLong() ?: ((session.actualWakeTimeMs ?: session.wakeUpTimeMs ?: System.currentTimeMillis()) - (session.actualBedtimeMs ?: 0)) / 60000 
+                    if (session.actualBedtimeMs != null || session.scheduledBedtimeMs != null) {
+                        session.estimatedSleepDurationMinutes?.toLong() 
+                            ?: ((session.actualWakeTimeMs ?: session.wakeUpTimeMs ?: System.currentTimeMillis()) - (session.actualBedtimeMs ?: session.scheduledBedtimeMs ?: 0)) / 60000 
+                    } else 0L
                 }
                 
                 val avgHours = totalMinutes.toDouble() / sessions.size / 60

@@ -90,6 +90,7 @@ private suspend fun scheduleAlarmForDays(
                 alarm.id,
                 bedtimeCal.timeInMillis,
                 "${alarm.name} - Bedtime",
+                dayOfWeek = day,
             )
 
             // Get errands for this alarm
@@ -107,6 +108,7 @@ private suspend fun scheduleAlarmForDays(
                     alarm.id,
                     errandsCal.timeInMillis,
                     "${alarm.name} - ${errand.title}",
+                    dayOfWeek = day,
                 )
             }
         }
@@ -121,6 +123,7 @@ private suspend fun scheduleAlarmForDays(
                 alarm.id,
                 wakeupCal.timeInMillis,
                 "${alarm.name} - Wake-up",
+                dayOfWeek = day,
             )
         }
     }
@@ -171,20 +174,28 @@ private fun scheduleAlarm(
     alarmId: Long,
     triggerAtMillis: Long,
     label: String,
+    dayOfWeek: Int? = null,
 ) {
     val intent = android.content.Intent(context, AlarmReceiver::class.java).apply {
         putExtra("type", type)
         putExtra("message", label)
         putExtra("alarm_id", alarmId)
         putExtra("label", label)
+        dayOfWeek?.let { putExtra("day_of_week", it) }
     }
 
     // Use exact timing for alarms (API 19+)
     val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     
+    val requestCode = if (dayOfWeek != null) {
+        ((type.hashCode() + dayOfWeek) * 1000 + alarmId.toInt()).and(Int.MAX_VALUE)
+    } else {
+        (type.hashCode() * 1000 + alarmId.toInt()).and(Int.MAX_VALUE)
+    }
+    
     val pendingIntent = android.app.PendingIntent.getBroadcast(
         context,
-        (type.hashCode() * 1000 + alarmId.toInt()).and(Int.MAX_VALUE),
+        requestCode,
         intent,
         flags,
     )

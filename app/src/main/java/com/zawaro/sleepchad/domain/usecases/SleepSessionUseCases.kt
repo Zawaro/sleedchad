@@ -15,7 +15,7 @@ class RecordBedtimeUseCase(
         
         if (session == null) {
             session = SleepSessionEntity(
-                id = 0,
+                id = 0L,
                 date = today,
                 scheduledBedtimeMs = null,
                 actualBedtimeMs = actualBedtimeMs,

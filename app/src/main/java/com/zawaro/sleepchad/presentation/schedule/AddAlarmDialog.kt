@@ -32,6 +32,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -55,12 +56,12 @@ fun AddCustomAlarmDialog(
     onDismiss: () -> Unit,
     onSave: (String, Set<Int>, Int, Int, Long?) -> Unit
 ) {
-    var name: String = remember { mutableStateOf("").value }
-    var selectedDays: Set<Int> = remember { mutableStateOf(setOf<Int>()).value }
+    val nameState = remember { mutableStateOf("") }
+    val selectedDaysState = remember { mutableStateOf(setOf<Int>()) }
     
     val prefSleepDuration = preferences.targetSleepDurationMinutes ?: 480
-    var targetSleepHours: Int = remember { mutableIntStateOf(prefSleepDuration / 60).value }
-    var targetSleepMinutes: Int = remember { mutableIntStateOf(prefSleepDuration % 60).value }
+    val targetSleepHoursState = remember { mutableIntStateOf(prefSleepDuration / 60) }
+    val targetSleepMinutesState = remember { mutableIntStateOf(prefSleepDuration % 60) }
     
     val wakeUpTimeMs = preferences.wakeUpTimeMs
     
@@ -78,22 +79,22 @@ fun AddCustomAlarmDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 TextField(
-                    value = name,
-                    onValueChange = { newName: String -> name = newName },
+                    value = nameState.value,
+                    onValueChange = { newName: String -> nameState.value = newName },
                     label = { Text("Name (optional)") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 
                 CircularDayPicker(
-                    selectedDays = remember { mutableStateOf(selectedDays).value }, 
+                    selectedDays = selectedDaysState.value, 
                     onDayToggle = { day ->
-                        if (day in usedDays && day !in selectedDays) return@CircularDayPicker
-                        selectedDays = if (day in selectedDays) selectedDays - day else selectedDays + day
+                        if (day in usedDays && day !in selectedDaysState.value) return@CircularDayPicker
+                        selectedDaysState.value = if (day in selectedDaysState.value) selectedDaysState.value - day else selectedDaysState.value + day
                     }
                 )
                 
-                var showHourPicker: Boolean = remember { mutableStateOf(false).value }
-                var showMinutePicker: Boolean = remember { mutableStateOf(false).value }
+                var showHourPicker: MutableState<Boolean> = remember { mutableStateOf(false) }
+                var showMinutePicker: MutableState<Boolean> = remember { mutableStateOf(false) }
                 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -105,14 +106,14 @@ fun AddCustomAlarmDialog(
                             Text("Target Sleep Duration", fontWeight = FontWeight.Medium, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             
                             Box(modifier = Modifier.width(60.dp)) {
-                                Surface(
-                                    onClick = { showHourPicker = true },
+Surface(
+                                    onClick = { showHourPicker.value = true },
                                     shape = RoundedCornerShape(8.dp),
                                     tonalElevation = 2.dp,
                                     color = MaterialTheme.colorScheme.primaryContainer
                                 ) {
                                     Text(
-                                        text = "%02d".format(targetSleepHours),
+                                        text = "%02d".format(targetSleepHoursState.value),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp,
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -124,13 +125,13 @@ fun AddCustomAlarmDialog(
                             
                             Box(modifier = Modifier.width(60.dp)) {
                                 Surface(
-                                    onClick = { showMinutePicker = true },
+                                    onClick = { showMinutePicker.value = true },
                                     shape = RoundedCornerShape(8.dp),
                                     tonalElevation = 2.dp,
                                     color = MaterialTheme.colorScheme.primaryContainer
                                 ) {
                                     Text(
-                                        text = "%02d".format(targetSleepMinutes),
+                                        text = "%02d".format(targetSleepMinutesState.value),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp,
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
@@ -141,35 +142,35 @@ fun AddCustomAlarmDialog(
                     }
                 }
                 
-                if (showHourPicker) {
+                if (showHourPicker.value) {
                     TimeSelectionDialog(
                         items = 12,
-                        selectedItem = targetSleepHours,
+                        selectedItem = targetSleepHoursState.value,
                         onItemSelected = { hour -> 
-                            targetSleepHours = hour 
-                            showHourPicker = false 
+                            targetSleepHoursState.value = hour
+                            showHourPicker.value = false 
                         },
                         formatItem = { "%02d".format(it) }
                     )
                 }
                 
-                if (showMinutePicker) {
+                if (showMinutePicker.value) {
                     TimeSelectionDialog(
                         items = 12,
-                        selectedItem = targetSleepMinutes,
+                        selectedItem = targetSleepMinutesState.value,
                         onItemSelected = { minute -> 
-                            targetSleepMinutes = minute * 5
-                            showMinutePicker = false 
+                            targetSleepMinutesState.value = minute * 5
+                            showMinutePicker.value = false 
                         },
                         formatItem = { "%02d".format(it * 5) }
                     )
                 }
                 
-                val calculatedBedtimeMs = remember(targetSleepHours, targetSleepMinutes, wakeUpTimeMs) {
-                    if (wakeUpTimeMs != null && (targetSleepHours * 60 + targetSleepMinutes) < 1440) {
+                val calculatedBedtimeMs = remember(targetSleepHoursState.value, targetSleepMinutesState.value, wakeUpTimeMs) {
+                    if (wakeUpTimeMs != null && (targetSleepHoursState.value * 60 + targetSleepMinutesState.value) < 1440) {
                         val wakeCal = java.util.Calendar.getInstance().apply { timeInMillis = wakeUpTimeMs }
                         val totalWakeMinutes = (wakeCal.get(java.util.Calendar.HOUR_OF_DAY) * 60) + wakeCal.get(java.util.Calendar.MINUTE)
-                        var totalBedMinutes = totalWakeMinutes - (targetSleepHours * 60 + targetSleepMinutes)
+                        var totalBedMinutes = totalWakeMinutes - (targetSleepHoursState.value * 60 + targetSleepMinutesState.value)
                         if (totalBedMinutes < 0) totalBedMinutes += 1440
                         (totalBedMinutes / 60) * 3600000L + ((totalBedMinutes % 60) * 60000L)
                     } else null
@@ -225,11 +226,11 @@ fun AddCustomAlarmDialog(
         confirmButton = {
             GradientButton(
                 onClick = { 
-                    if (selectedDays.isNotEmpty()) {
-                        onSave(name, selectedDays, targetSleepHours, targetSleepMinutes, wakeUpTimeMs)
+                    if (selectedDaysState.value.isNotEmpty()) {
+                        onSave(nameState.value, selectedDaysState.value, targetSleepHoursState.value, targetSleepMinutesState.value, wakeUpTimeMs)
                     }
                 },
-                enabledByDefault = selectedDays.isNotEmpty(),
+                enabledByDefault = selectedDaysState.value.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth(),
                 colors = listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.8f), MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)),
                 content = { Text("Save Routine") }

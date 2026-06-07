@@ -2,6 +2,7 @@ package com.zawaro.sleepchad.core
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,13 +29,17 @@ object NotificationHelper {
         }
     }
 
+    private var notificationIdCounter = 0
+
     fun show(
         context: Context,
         channelId: String,
         title: String,
         message: String,
+        notificationId: Int? = null,
+        contentIntent: PendingIntent? = null,
     ) {
-        // Ensure POST_NOTIFICATIONS permission is granted before notifying
+        val id = notificationId ?: (notificationIdCounter++ % 10000)
         if (androidx.core.content.ContextCompat.checkSelfPermission(
                 context,
                 android.Manifest.permission.POST_NOTIFICATIONS,
@@ -47,11 +52,12 @@ object NotificationHelper {
                     .setContentTitle(title)
                     .setContentText(message)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(contentIntent)
+                    .setAutoCancel(true)
                     .build()
             try {
-                NotificationManagerCompat.from(context).notify(0, notification)
+                NotificationManagerCompat.from(context).notify(id, notification)
             } catch (e: SecurityException) {
-                // Handle potential security exception gracefully
             }
         }
     }

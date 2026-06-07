@@ -3,8 +3,11 @@ package com.zawaro.sleepchad.domain.repository
 import com.zawaro.sleepchad.data.ScheduleRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CustomAlarmRepository(
+@Singleton
+class CustomAlarmRepository @Inject constructor(
     private val scheduleRepository: ScheduleRepository,
 ) {
     suspend fun getCustomAlarms(): List<com.zawaro.sleepchad.data.CustomAlarmEntity> = withContext(Dispatchers.IO) {

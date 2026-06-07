@@ -1,17 +1,15 @@
 package com.zawaro.sleepchad.data
 
 import android.content.Context
-import androidx.room.TypeConverters
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
     entities = [ScheduleEntity::class, ErrandEntity::class, UserPreferencesEntity::class, CustomAlarmEntity::class, SleepSessionEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
-@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun scheduleDao(): ScheduleDao
     abstract fun errandDao(): ErrandDao

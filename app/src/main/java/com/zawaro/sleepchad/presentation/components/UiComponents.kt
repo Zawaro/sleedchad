@@ -59,7 +59,7 @@ fun PreferenceCard(
     modifier: Modifier = Modifier
 ) {
 Card(
-        modifier = Modifier.fillMaxWidth().fillMaxSize(),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.5f)),
         shape = RoundedCornerShape(12.dp)
     ) {
@@ -122,14 +122,17 @@ fun LastNightBanner(
 }
 
 @Composable
-fun CustomAlarmHeader(modifier: Modifier = Modifier) {
+fun CustomAlarmHeader(
+    onClearAll: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     Row(modifier = modifier.padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column {
             Text("Custom Schedules", style = MaterialTheme.typography.headlineSmall)
             Text("Override schedule", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        
-        TextButton(onClick = {}) {
+
+        TextButton(onClick = onClearAll) {
             Text("Clear All")
         }
     }
@@ -170,42 +173,6 @@ fun CustomAlarmAccordionItem(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ClockDayPicker(
-    selectedDays: Set<Int>,
-    onDayToggle: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val dayLabels = listOf("M", "T", "W", "T", "F", "S", "S")
-    
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        dayLabels.forEachIndexed { index, label ->
-            val dayNum = index + 1
-            val isSelected = dayNum in selectedDays
-            
-            DayChip(text = label, selected = isSelected, onClick = { onDayToggle(dayNum) })
-        }
-    }
-}
-
-@Composable
-fun DayChip(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.clickable(onClick = onClick).size(48.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else MaterialTheme.colorScheme.surfaceContainerHigh,
-        tonalElevation = 2.dp
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal, color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

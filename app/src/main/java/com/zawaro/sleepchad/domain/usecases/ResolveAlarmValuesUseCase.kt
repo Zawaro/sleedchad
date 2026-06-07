@@ -3,8 +3,9 @@ package com.zawaro.sleepchad.domain.usecases
 import com.zawaro.sleepchad.data.CustomAlarmEntity
 import com.zawaro.sleepchad.data.EffectiveAlarmValues
 import com.zawaro.sleepchad.data.UserPreferencesEntity
+import javax.inject.Inject
 
-class ResolveAlarmValuesUseCase {
+class ResolveAlarmValuesUseCase @Inject constructor() {
     fun execute(
         alarm: CustomAlarmEntity,
         preferences: UserPreferencesEntity?

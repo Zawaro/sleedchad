@@ -3,8 +3,11 @@ package com.zawaro.sleepchad.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class SleepSessionRepository(
+@Singleton
+class SleepSessionRepository @Inject constructor(
     private val sleepSessionDao: SleepSessionDao,
 ) {
     companion object {
@@ -21,7 +24,11 @@ class SleepSessionRepository(
         sleepSessionDao.getSessionByDate(date).first()
     }
 
-    fun update(session: SleepSessionEntity) {
+    suspend fun getSessionsByDateRange(startMillis: Long, endMillis: Long): List<SleepSessionEntity> = withContext(Dispatchers.IO) {
+        sleepSessionDao.getSessionsByDateRange(startMillis, endMillis)
+    }
+
+    suspend fun update(session: SleepSessionEntity) = withContext(Dispatchers.IO) {
         sleepSessionDao.update(session)
     }
 }

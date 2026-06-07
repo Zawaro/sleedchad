@@ -21,3 +21,12 @@ local.properties
 
 # Gradle wrapper
 gradle/wrapper/dists/
+
+# AI/agent artifacts
+.claude/
+.opencode/
+openspec/
+plans/
+
+# Miscellaneous
+*.zip

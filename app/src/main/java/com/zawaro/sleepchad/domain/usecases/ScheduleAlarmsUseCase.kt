@@ -4,11 +4,13 @@ import android.app.AlarmManager
 import android.content.Context
 import com.zawaro.sleepchad.data.ScheduleRepository
 import com.zawaro.sleepchad.platform.alarm.scheduleAllAlarms
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 /** Use case to schedule all alarms. */
-class ScheduleAlarmsUseCase(
-    private val context: Context,
+class ScheduleAlarmsUseCase @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repo: ScheduleRepository,
 ) {
     suspend operator fun invoke() = withContext(kotlinx.coroutines.Dispatchers.IO) {

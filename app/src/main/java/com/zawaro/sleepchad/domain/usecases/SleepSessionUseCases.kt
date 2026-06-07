@@ -4,8 +4,9 @@ import com.zawaro.sleepchad.data.SleepSessionEntity
 import com.zawaro.sleepchad.domain.repository.UserPreferencesRepository
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
-class RecordBedtimeUseCase(
+class RecordBedtimeUseCase @Inject constructor(
     private val repository: UserPreferencesRepository,
 ) {
     suspend operator fun invoke(actualBedtimeMs: Long): SleepSessionEntity? {
@@ -33,7 +34,7 @@ class RecordBedtimeUseCase(
     }
 }
 
-class RecordWakeUpUseCase(
+class RecordWakeUpUseCase @Inject constructor(
     private val repository: UserPreferencesRepository,
 ) {
     suspend operator fun invoke(actualWakeTimeMs: Long): SleepSessionEntity? {
@@ -64,7 +65,7 @@ class RecordWakeUpUseCase(
     }
 }
 
-class GetLastNightSleepSessionUseCase(
+class GetLastNightSleepSessionUseCase @Inject constructor(
     private val repository: UserPreferencesRepository,
 ) {
     suspend operator fun invoke(): SleepSessionEntity? {

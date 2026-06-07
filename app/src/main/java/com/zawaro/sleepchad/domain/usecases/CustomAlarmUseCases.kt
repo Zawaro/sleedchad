@@ -1,8 +1,9 @@
 package com.zawaro.sleepchad.domain.usecases
 
 import com.zawaro.sleepchad.domain.repository.CustomAlarmRepository
+import javax.inject.Inject
 
-class GetCustomAlarmsUseCase(
+class GetCustomAlarmsUseCase @Inject constructor(
     private val repository: CustomAlarmRepository,
 ) {
     suspend operator fun invoke() = repository.getCustomAlarms()
@@ -10,7 +11,7 @@ class GetCustomAlarmsUseCase(
     suspend fun getById(id: Long) = repository.getCustomAlarmById(id)
 }
 
-class SaveCustomAlarmUseCase(
+class SaveCustomAlarmUseCase @Inject constructor(
     private val repository: CustomAlarmRepository,
 ) {
     suspend operator fun invoke(alarm: com.zawaro.sleepchad.data.CustomAlarmEntity): Long = 

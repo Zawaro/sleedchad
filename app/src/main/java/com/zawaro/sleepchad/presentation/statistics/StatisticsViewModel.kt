@@ -2,13 +2,16 @@ package com.zawaro.sleepchad.presentation.statistics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.zawaro.sleepchad.data.AppDatabase
+import com.zawaro.sleepchad.data.SleepSessionRepository
+import com.zawaro.sleepchad.data.ScheduleRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import javax.inject.Inject
 
 data class StatisticsUiModel(
     val lastNightSleepMinutes: Int? = null,
@@ -19,8 +22,10 @@ data class StatisticsUiModel(
     val monthTotalHours: Double? = null
 )
 
-class StatisticsViewModel(
-    private val database: AppDatabase
+@HiltViewModel
+class StatisticsViewModel @Inject constructor(
+    private val sleepSessionRepository: SleepSessionRepository,
+    private val scheduleRepository: ScheduleRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(StatisticsUiModel())
@@ -48,7 +53,7 @@ class StatisticsViewModel(
             }
 
             val sessions = withContext(Dispatchers.IO) {
-                database.sleepSessionDao().getSessionsByDateRange(
+                sleepSessionRepository.getSessionsByDateRange(
                     yesterday.timeInMillis, 
                     today.timeInMillis
                 )
@@ -56,9 +61,9 @@ class StatisticsViewModel(
 
             if (sessions.isNotEmpty()) {
                 val latestSession = sessions.maxByOrNull { it.wakeUpTimeMs ?: 0L } ?: return@launch
-                
+
                 val userPrefs = withContext(Dispatchers.IO) {
-                    database.scheduleDao().getUserPreferences()
+                    scheduleRepository.getUserPreferences()
                 }
                 val targetSleepDurationMinutes = userPrefs?.targetSleepDurationMinutes ?: 480
                 val lastNightSleepMinutes: Int? = if (latestSession.actualBedtimeMs != null || latestSession.scheduledBedtimeMs != null) {
@@ -96,7 +101,7 @@ class StatisticsViewModel(
             }
 
             val sessions = withContext(Dispatchers.IO) {
-                database.sleepSessionDao().getSessionsByDateRange(
+                sleepSessionRepository.getSessionsByDateRange(
                     sevenDaysAgo.timeInMillis, 
                     System.currentTimeMillis()
                 )
@@ -123,12 +128,12 @@ class StatisticsViewModel(
     fun loadMonthStats() {
         viewModelScope.launch {
             val thirtyDaysAgo = Calendar.getInstance().apply {
-                timeInMillis = System.currentTimeMillis() - (30 * 24 * 60 * 60 * 1000)
+                timeInMillis = System.currentTimeMillis() - (30L * 24 * 60 * 60 * 1000)
                 set(Calendar.HOUR_OF_DAY, 0)
             }
 
             val sessions = withContext(Dispatchers.IO) {
-                database.sleepSessionDao().getSessionsByDateRange(
+                sleepSessionRepository.getSessionsByDateRange(
                     thirtyDaysAgo.timeInMillis, 
                     System.currentTimeMillis()
                 )

@@ -3,14 +3,17 @@ package com.zawaro.sleepchad.data
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Repository that abstracts access to [ScheduleEntity] data.
  * It uses the Room database under the hood but can be mocked easily for tests.
  */
-class ScheduleRepository(
+@Singleton
+class ScheduleRepository @Inject constructor(
     private val scheduleDao: ScheduleDao,
-    val errandDao: ErrandDao,
+    private val errandDao: ErrandDao,
 ) {
     companion object {
         fun createWithContext(context: Context): ScheduleRepository = ScheduleRepository(

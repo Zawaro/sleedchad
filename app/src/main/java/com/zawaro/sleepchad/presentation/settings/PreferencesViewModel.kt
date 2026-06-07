@@ -1,5 +1,7 @@
 package com.zawaro.sleepchad.presentation.settings
 
+import android.content.Context
+import android.text.format.DateFormat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.zawaro.sleepchad.data.UserPreferencesEntity
@@ -8,10 +10,13 @@ import com.zawaro.sleepchad.domain.usecases.SaveUserPreferencesUseCase
 import com.zawaro.sleepchad.domain.usecases.RecordBedtimeUseCase
 import com.zawaro.sleepchad.domain.usecases.RecordWakeUpUseCase
 import com.zawaro.sleepchad.domain.usecases.GetLastNightSleepSessionUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 data class UserPreferencesUiModel(
     val targetSleepDurationMinutes: Int? = null,
@@ -20,6 +25,10 @@ data class UserPreferencesUiModel(
     val timeFormatPreference: String? = null,
     val themeIndex: Int = 0,
     val lastNightEstimatedSleepMinutes: Int? = null,
+    val weekendRecoveryEnabled: Boolean = false,
+    val weekendWakeUpTimeMs: Long? = null,
+    val weekendTargetSleepDurationMinutes: Int? = null,
+    val weekendErrandsDurationMinutes: Int? = null,
 ) {
     companion object {
         fun fromEntity(entity: UserPreferencesEntity?, lastNightSession: com.zawaro.sleepchad.data.SleepSessionEntity?): UserPreferencesUiModel {
@@ -34,18 +43,24 @@ data class UserPreferencesUiModel(
                 errandsDurationMinutes = entity.errandsDurationMinutes,
                 timeFormatPreference = entity.timeFormatPreference,
                 themeIndex = entity.themeIndex,
-                lastNightEstimatedSleepMinutes = lastNightSession?.estimatedSleepDurationMinutes
+                lastNightEstimatedSleepMinutes = lastNightSession?.estimatedSleepDurationMinutes,
+                weekendRecoveryEnabled = entity.weekendRecoveryEnabled,
+                weekendWakeUpTimeMs = entity.weekendWakeUpTimeMs,
+                weekendTargetSleepDurationMinutes = entity.weekendTargetSleepDurationMinutes,
+                weekendErrandsDurationMinutes = entity.weekendErrandsDurationMinutes,
             )
         }
     }
 }
 
-class PreferencesViewModel(
+@HiltViewModel
+class PreferencesViewModel @Inject constructor(
     private val getUserPreferences: GetUserPreferencesUseCase,
     private val saveUserPreferences: SaveUserPreferencesUseCase,
-    private val recordBedtime: RecordBedtimeUseCase? = null,
-    private val recordWakeUp: RecordWakeUpUseCase? = null,
-    private val getLastNightSession: GetLastNightSleepSessionUseCase? = null,
+    private val recordBedtime: RecordBedtimeUseCase,
+    private val recordWakeUp: RecordWakeUpUseCase,
+    private val getLastNightSession: GetLastNightSleepSessionUseCase,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _preferences = MutableStateFlow(UserPreferencesUiModel())
@@ -60,7 +75,7 @@ class PreferencesViewModel(
 
     private suspend fun loadPreferences() {
         val entity = getUserPreferences()
-        val lastNightSession = getLastNightSession?.let { it.invoke() }
+        val lastNightSession = getLastNightSession.invoke()
 
         if (entity != null && entity.targetSleepDurationMinutes != null) {
             _preferences.value = UserPreferencesUiModel.fromEntity(entity, lastNightSession)
@@ -71,22 +86,22 @@ class PreferencesViewModel(
         }
     }
 
-    fun loadPreferencesWithSystemDetection(context: android.content.Context, savePrefsUseCase: SaveUserPreferencesUseCase) {
+    fun loadPreferencesWithSystemDetection() {
         viewModelScope.launch {
             val entity = getUserPreferences()
 
             val resolvedEntity = if (entity != null && !entity.timeFormatPreference.isNullOrEmpty()) {
                 entity
             } else {
-                val use24Hour = android.text.format.DateFormat.is24HourFormat(context)
+                val use24Hour = DateFormat.is24HourFormat(context)
                 val defaultFormat = if (use24Hour) "true" else "false"
                 val updatedEntity = entity?.copy(timeFormatPreference = defaultFormat) ?: UserPreferencesEntity(id = 1, timeFormatPreference = defaultFormat)
                 
-                savePrefsUseCase(updatedEntity)
+                saveUserPreferences(updatedEntity)
                 updatedEntity
             }
 
-            _preferences.value = UserPreferencesUiModel.fromEntity(resolvedEntity, getLastNightSession?.invoke())
+            _preferences.value = UserPreferencesUiModel.fromEntity(resolvedEntity, getLastNightSession.invoke())
 
             if (resolvedEntity.targetSleepDurationMinutes != null) {
                 _onboardingComplete.value = true
@@ -174,30 +189,6 @@ class PreferencesViewModel(
         }
     }
 
-    fun updateTimeFormat(value: Boolean?) {
-        viewModelScope.launch {
-            val current = _preferences.value
-            savePreferences(
-                targetSleepDurationMinutes = current.targetSleepDurationMinutes,
-                wakeUpTimeMs = current.wakeUpTimeMs,
-                errandsDurationMinutes = current.errandsDurationMinutes,
-                timeFormatPreference = value?.toString()
-            )
-        }
-    }
-
-    fun updateTimeFormatBoolean(use24Hour: Boolean?) {
-        viewModelScope.launch {
-            val current = _preferences.value
-            savePreferences(
-                targetSleepDurationMinutes = current.targetSleepDurationMinutes,
-                wakeUpTimeMs = current.wakeUpTimeMs,
-                errandsDurationMinutes = current.errandsDurationMinutes,
-                timeFormatPreference = use24Hour?.toString()
-            )
-        }
-    }
-
     fun updateThemeIndex(themeIndex: Int) {
         viewModelScope.launch {
             val current = getUserPreferences() ?: UserPreferencesEntity(id = 1)
@@ -218,15 +209,49 @@ class PreferencesViewModel(
     fun recordBedtime() {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            recordBedtime?.invoke(now)
+            recordBedtime.invoke(now)
         }
     }
 
     fun recordWakeUp() {
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            recordWakeUp?.invoke(now)
+            recordWakeUp.invoke(now)
             loadPreferences()
+        }
+    }
+
+    fun toggleWeekendRecovery(enabled: Boolean) {
+        viewModelScope.launch {
+            val current = getUserPreferences() ?: UserPreferencesEntity(id = 1)
+            val updated = current.copy(weekendRecoveryEnabled = enabled)
+            if (current.id == 0) {
+                saveUserPreferences(updated)
+            } else {
+                saveUserPreferences(updated.copy(id = current.id))
+            }
+            _preferences.value = UserPreferencesUiModel.fromEntity(updated, null)
+        }
+    }
+
+    fun updateWeekendPreferences(
+        targetSleepDurationMinutes: Int,
+        wakeUpTimeMs: Long,
+        errandsDurationMinutes: Int
+    ) {
+        viewModelScope.launch {
+            val current = getUserPreferences() ?: UserPreferencesEntity(id = 1)
+            val updated = current.copy(
+                weekendTargetSleepDurationMinutes = targetSleepDurationMinutes,
+                weekendWakeUpTimeMs = wakeUpTimeMs,
+                weekendErrandsDurationMinutes = errandsDurationMinutes,
+            )
+            if (current.id == 0) {
+                saveUserPreferences(updated)
+            } else {
+                saveUserPreferences(updated.copy(id = current.id))
+            }
+            _preferences.value = UserPreferencesUiModel.fromEntity(updated, null)
         }
     }
 

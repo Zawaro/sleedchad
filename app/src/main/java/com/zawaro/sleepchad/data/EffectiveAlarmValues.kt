@@ -12,7 +12,10 @@ data class EffectiveAlarmValues(
             val sleepDuration = preferences.targetSleepDurationMinutes ?: 480 // default 8 hours
             val errandsDuration = preferences.errandsDurationMinutes ?: 0
             
-            val calculatedBedtime = wakeUpTime - (sleepDuration.toLong() * 60 * 1000) - (errandsDuration.toLong() * 60 * 1000)
+            var calculatedBedtime = wakeUpTime - (sleepDuration.toLong() * 60 * 1000) - (errandsDuration.toLong() * 60 * 1000)
+            if (calculatedBedtime < 0L) {
+                calculatedBedtime += (24 * 3600000L)
+            }
             
             return EffectiveAlarmValues(
                 targetSleepDurationMinutes = sleepDuration,
@@ -34,7 +37,10 @@ data class EffectiveAlarmValues(
             
             val errandsDuration = alarm.errandsDurationMinutes ?: (preferences.errandsDurationMinutes ?: 0)
             
-            val calculatedBedtime = wakeUpTime - (sleepDuration.toLong() * 60 * 1000) - (errandsDuration.toLong() * 60 * 1000)
+            var calculatedBedtime = wakeUpTime - (sleepDuration.toLong() * 60 * 1000) - (errandsDuration.toLong() * 60 * 1000)
+            if (calculatedBedtime < 0L) {
+                calculatedBedtime += (24 * 3600000L)
+            }
             
             return EffectiveAlarmValues(
                 targetSleepDurationMinutes = sleepDuration,

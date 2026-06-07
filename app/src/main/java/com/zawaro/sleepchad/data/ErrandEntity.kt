@@ -1,22 +1,19 @@
 package com.zawaro.sleepchad.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 
-@Entity(
-    tableName = "errands",
-    foreignKeys = [ForeignKey(
-        entity = ScheduleEntity::class,
-        parentColumns = ["id"],
-        childColumns = ["alarmId"],
-        onDelete = ForeignKey.CASCADE
-    )]
-)
+@Entity(tableName = "errands")
 data class ErrandEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val alarmId: Long,
-    val title: String = "",
-    val iconEmoji: String = "🔔",
-    val minutesBeforeBedtime: Int = 30,
-)
+    @ColumnInfo(name = "alarmId") val alarmId: Long,
+    @ColumnInfo(name = "title") val title: String = "",
+    @ColumnInfo(name = "iconEmoji") val iconEmoji: String = "🔔",
+    @ColumnInfo(name = "minutesBeforeBedtime") val minutesBeforeBedtime: Int = 30,
+) {
+    companion object {
+        const val DEFAULT_EMOJI = "🔔"
+        const val DEFAULT_MINUTES_BEFORE_BEDTIME = 30
+    }
+}

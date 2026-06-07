@@ -13,21 +13,24 @@ import com.zawaro.sleepchad.domain.usecases.GetUserPreferencesUseCase
 import com.zawaro.sleepchad.domain.usecases.GetExceptionAlarmsUseCase
 import com.zawaro.sleepchad.domain.usecases.CreateExceptionAlarmUseCase
 import com.zawaro.sleepchad.domain.usecases.DeleteExceptionAlarmUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * ViewModel that exposes alarm state and handles user actions.
  */
-class ScheduleViewModel(
+@HiltViewModel
+class ScheduleViewModel @Inject constructor(
     private val getSchedule: GetScheduleUseCase,
     private val saveSchedule: SaveScheduleUseCase,
     private val scheduleAlarms: ScheduleAlarmsUseCase,
     private val errandRepository: ErrandRepository,
-    private val getUserPreferences: GetUserPreferencesUseCase? = null,
-    private val getExceptionAlarmsUseCase: GetExceptionAlarmsUseCase? = null,
-    private val createExceptionAlarmUseCase: CreateExceptionAlarmUseCase? = null,
-    private val deleteExceptionAlarmUseCase: DeleteExceptionAlarmUseCase? = null,
+    private val getUserPreferences: GetUserPreferencesUseCase,
+    private val getExceptionAlarmsUseCase: GetExceptionAlarmsUseCase,
+    private val createExceptionAlarmUseCase: CreateExceptionAlarmUseCase,
+    private val deleteExceptionAlarmUseCase: DeleteExceptionAlarmUseCase,
 ) : ViewModel() {
 
     data class AlarmUiModel(
@@ -57,6 +60,9 @@ class ScheduleViewModel(
     private val _nextAlarmTime = MutableStateFlow<Long?>(null)
     val nextAlarmTime: StateFlow<Long?> = _nextAlarmTime.asStateFlow()
 
+    private val _snackbarEvent = MutableSharedFlow<String>(extraBufferCapacity = 1)
+    val snackbarEvent: SharedFlow<String> = _snackbarEvent.asSharedFlow()
+
     init {
         viewModelScope.launch { loadAll() }
     }
@@ -67,7 +73,7 @@ class ScheduleViewModel(
     }
 
     private suspend fun getWakeUpTimeFromPreferences(): Long? {
-        return getUserPreferences?.invoke()?.wakeUpTimeMs
+        return getUserPreferences.invoke()?.wakeUpTimeMs
     }
 
     private suspend fun loadAll() {
@@ -84,12 +90,14 @@ class ScheduleViewModel(
             )
         }
 
-        val exceptions = getExceptionAlarmsUseCase?.invoke() ?: emptyList()
+        val exceptions = getExceptionAlarmsUseCase.invoke()
         _exceptionAlarms.value = exceptions.map { alarm ->
             alarm
         }
 
         calculateNextAlarm()
+
+        viewModelScope.launch { scheduleAlarms() }
     }
 
     private fun calculateNextAlarm() {
@@ -187,18 +195,52 @@ class ScheduleViewModel(
         )
 
         saveSchedule.update(alarm)
-        
+
+        loadAll()
+    }
+
+    /** Toggles the enabled state of an exception alarm. */
+    fun toggleExceptionAlarm(id: Long, isEnabled: Boolean) = viewModelScope.launch {
+        val exceptions = _exceptionAlarms.value
+        val toUpdate = exceptions.find { it.id == id } ?: return@launch
+        val updated = toUpdate.copy(isEnabled = isEnabled)
+        createExceptionAlarmUseCase.invoke(updated)
+        _snackbarEvent.tryEmit(if (isEnabled) "Alarm enabled" else "Alarm disabled")
+        loadAll()
+    }
+
+    /** Updates the enabled days of an exception alarm. */
+    fun updateExceptionAlarmEnabledDays(id: Long, enabledDays: Set<Int>, name: String, bedtimeMs: Long?, wakeupMs: Long?) = viewModelScope.launch {
+        val alarm = ScheduleEntity(
+            id = id,
+            name = name.ifEmpty { "Exception" },
+            isDefaultAlarm = false,
+            enabledDaysString = com.zawaro.sleepchad.data.CustomAlarmEntity.toDaysString(enabledDays),
+            bedtimeMs = bedtimeMs,
+            wakeupMs = wakeupMs,
+        )
+        saveSchedule.update(alarm)
+        _snackbarEvent.tryEmit("Alarm days updated")
         loadAll()
     }
 
     /** Deletes an exception alarm. */
-fun deleteExceptionAlarm(id: Long) = viewModelScope.launch {
+    fun deleteExceptionAlarm(id: Long) = viewModelScope.launch {
         val exceptions = _exceptionAlarms.value
         val toDelete = exceptions.find { it.id == id }
         if (toDelete != null) {
-            deleteExceptionAlarmUseCase?.invoke(toDelete.id) ?: Unit
+            deleteExceptionAlarmUseCase.invoke(toDelete.id)
+            _snackbarEvent.tryEmit("Alarm deleted")
             loadAll()
         }
+    }
+
+    /** Deletes all exception alarms at once (batched). */
+    fun deleteAllExceptionAlarms() = viewModelScope.launch {
+        val ids = _exceptionAlarms.value.map { it.id }
+        ids.forEach { id -> deleteExceptionAlarmUseCase.invoke(id) }
+        _snackbarEvent.tryEmit("All custom alarms cleared")
+        loadAll()
     }
 
     /** Updates the default alarm. */

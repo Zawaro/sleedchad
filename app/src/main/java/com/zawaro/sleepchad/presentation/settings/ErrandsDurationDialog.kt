@@ -1,107 +1,104 @@
 package com.zawaro.sleepchad.presentation.settings
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.VerticalDivider
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ErrandsDurationDialog(
+fun ErrandsDurationDialogContent(
     initialHours: Int,
     initialMinutes: Int,
-    onDismissRequest: () -> Unit,
     onSave: (hours: Int, minutes: Int) -> Unit
 ) {
     var selectedHours by remember { mutableIntStateOf(initialHours.coerceIn(0, 2)) }
     var selectedMinutes by remember { mutableIntStateOf(initialMinutes.coerceIn(0, 59)) }
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text("Evening Errands Duration") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Errands Buffer Duration",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Hour Picker
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Hours", style = MaterialTheme.typography.labelMedium)
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(24.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("Hours")
-                        Text(
-                            text = selectedHours.toString(),
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                    }
-
-                    VerticalDivider(modifier = Modifier.width(1.dp))
-
-                    Column(horizontalAlignment = Alignment.Start) {
-                        Text("Minutes")
-                        Text(
-                            text = selectedMinutes.toString(),
-                            style = MaterialTheme.typography.headlineLarge
-                        )
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(onClick = {
-                        selectedHours = (selectedHours - 1).takeIf { it >= 0 } ?: 0
-                    }) {
+                    FilledTonalButton(onClick = { selectedHours = (selectedHours - 1).coerceAtLeast(0) }) {
                         Text("-")
                     }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Button(onClick = {
-                        selectedHours = (selectedHours + 1).coerceIn(0, 2)
-                    }) {
-                        Text("+")
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(onClick = {
-                        selectedMinutes = (selectedMinutes - 5).takeIf { it >= 0 } ?: 59
-                    }) {
-                        Text("-")
-                    }
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-                    Button(onClick = {
-                        selectedMinutes = (selectedMinutes + 5).takeIf { it < 60 } ?: 0
-                    }) {
+                    Text(
+                        text = String.format("%d", selectedHours),
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    FilledTonalButton(onClick = { selectedHours = (selectedHours + 1).coerceAtMost(2) }) {
                         Text("+")
                     }
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                onSave(selectedHours, selectedMinutes)
-            }) {
-                Text("Save")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
+
+            // Minute Picker
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Minutes", style = MaterialTheme.typography.labelMedium)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FilledTonalButton(onClick = { selectedMinutes = (selectedMinutes - 5).coerceAtLeast(0) }) {
+                        Text("-")
+                    }
+                    Text(
+                        text = String.format("%02d", selectedMinutes),
+                        style = MaterialTheme.typography.headlineLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    FilledTonalButton(onClick = { selectedMinutes = (selectedMinutes + 5).coerceAtMost(59) }) {
+                        Text("+")
+                    }
+                }
             }
         }
-    )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            TextButton(
+                onClick = { /* Handled by ModalBottomSheet dismiss */ },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Cancel")
+            }
+
+            Button(
+                onClick = {
+                    onSave(selectedHours, selectedMinutes)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Set Buffer")
+            }
+        }
+    }
 }

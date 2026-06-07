@@ -4,8 +4,11 @@ import com.zawaro.sleepchad.data.SleepSessionRepository
 import com.zawaro.sleepchad.data.ScheduleRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class UserPreferencesRepository(
+@Singleton
+class UserPreferencesRepository @Inject constructor(
     private val scheduleRepository: ScheduleRepository,
     private val sleepSessionRepository: SleepSessionRepository,
 ) {

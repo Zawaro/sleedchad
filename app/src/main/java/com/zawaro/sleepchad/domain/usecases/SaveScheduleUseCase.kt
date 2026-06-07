@@ -4,11 +4,12 @@ import com.zawaro.sleepchad.data.ErrandRepository
 import com.zawaro.sleepchad.data.ScheduleEntity
 import com.zawaro.sleepchad.data.ScheduleRepository
 import com.zawaro.sleepchad.utils.toDaysSet
+import javax.inject.Inject
 
 /**
  * Use‑case for persisting an alarm (default or exception).
  */
-class SaveScheduleUseCase(
+class SaveScheduleUseCase @Inject constructor(
     private val repository: ScheduleRepository,
     private val errandRepository: ErrandRepository,
 ) {

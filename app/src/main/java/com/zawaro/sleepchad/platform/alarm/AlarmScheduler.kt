@@ -21,6 +21,7 @@ suspend fun scheduleAllAlarms(
     // Get default and exception alarms from repository
     val defaultAlarm = repo.getDefaultAlarm()
     val exceptionAlarms = repo.getExceptionAlarms()
+    val userPrefs = repo.getUserPreferences()
 
     // Calculate which days are covered by exceptions
     val exceptionDays = mutableSetOf<Int>()
@@ -54,7 +55,8 @@ suspend fun scheduleAllAlarms(
                 alarmMgr,
                 defaultAlarm,
                 uncoveredDays,
-                repo
+                repo,
+                userPrefs
             )
         }
     } else if (defaultAlarm != null && exceptionDays.isEmpty()) {
@@ -64,7 +66,8 @@ suspend fun scheduleAllAlarms(
             alarmMgr,
             defaultAlarm,
             setOf(1, 2, 3, 4, 5, 6, 7),
-            repo
+            repo,
+            userPrefs
         )
     }
 }
@@ -74,15 +77,39 @@ private suspend fun scheduleAlarmForDays(
     alarmMgr: AlarmManager,
     alarm: ScheduleEntity,
     days: Set<Int>,
-    repo: ScheduleRepository
+    repo: ScheduleRepository,
+    userPrefs: com.zawaro.sleepchad.data.UserPreferencesEntity? = null,
 ) {
     for (day in days) {
         val calendarDay = dayOfWeekToCalendar(day)
 
+        // Apply weekend recovery override for default alarm on Sat(6)/Sun(7)
+        val effectiveBedtimeMs = if (alarm.isDefaultAlarm && userPrefs?.weekendRecoveryEnabled == true && (day == 6 || day == 7)) {
+            userPrefs.weekendWakeUpTimeMs?.let { weekendWake ->
+                userPrefs.weekendTargetSleepDurationMinutes?.let { weekendSleep ->
+                    val weekendWakeCal = java.util.Calendar.getInstance().apply { timeInMillis = weekendWake }
+                    val totalWakeMinutes = (weekendWakeCal.get(java.util.Calendar.HOUR_OF_DAY) * 60) + weekendWakeCal.get(java.util.Calendar.MINUTE)
+                    var totalBedMinutes = totalWakeMinutes - weekendSleep
+                    if (totalBedMinutes < 0) totalBedMinutes += 1440
+                    (totalBedMinutes * 60000L)
+                } ?: alarm.bedtimeMs
+            } ?: alarm.bedtimeMs
+        } else {
+            alarm.bedtimeMs
+        }
+
+        val effectiveWakeupMs = if (alarm.isDefaultAlarm && userPrefs?.weekendRecoveryEnabled == true && (day == 6 || day == 7)) {
+            userPrefs.weekendWakeUpTimeMs ?: alarm.wakeupMs
+        } else {
+            alarm.wakeupMs
+        }
+
         // Bedtime alarm and errands reminders
-        if (alarm.bedtimeMs != null) {
-            val bedtimeCal = nextOccurrence(calendarDay, alarm.bedtimeMs!!)
-            
+        if (effectiveBedtimeMs != null) {
+            val bedtimeDay = if (day == 1) 7 else day - 1
+            val bedtimeCalendarDay = dayOfWeekToCalendar(bedtimeDay)
+            val bedtimeCal = nextOccurrence(bedtimeCalendarDay, effectiveBedtimeMs)
+
             scheduleAlarm(
                 context,
                 alarmMgr,
@@ -93,8 +120,7 @@ private suspend fun scheduleAlarmForDays(
                 dayOfWeek = day,
             )
 
-            // Get errands for this alarm
-            val errands = repo.errandDao.getErrandsByAlarm(alarm.id)
+            val errands = repo.getErrandsForAlarm(alarm.id)
             for (errand in errands) {
                 val errandsCal = bedtimeCal.clone() as java.util.Calendar
                 errandsCal.add(
@@ -114,8 +140,8 @@ private suspend fun scheduleAlarmForDays(
         }
 
         // Wake-up alarm
-        if (alarm.wakeupMs != null) {
-            val wakeupCal = nextOccurrence(calendarDay, alarm.wakeupMs!!)
+        if (effectiveWakeupMs != null) {
+            val wakeupCal = nextOccurrence(calendarDay, effectiveWakeupMs)
             scheduleAlarm(
                 context,
                 alarmMgr,

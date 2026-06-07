@@ -3,8 +3,11 @@ package com.zawaro.sleepchad.presentation.settings
 import android.app.Application
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.lifecycle.AndroidViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class SettingsViewModel(
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
     application: Application,
 ) : AndroidViewModel(application) {
     private val prefs = application.getSharedPreferences("settings", 0)

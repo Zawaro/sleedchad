@@ -2,11 +2,12 @@ package com.zawaro.sleepchad.domain.usecases
 
 import com.zawaro.sleepchad.data.ScheduleEntity
 import com.zawaro.sleepchad.data.ScheduleRepository
+import javax.inject.Inject
 
 /**
  * Use‑case for fetching alarm schedules.
  */
-class GetScheduleUseCase(
+class GetScheduleUseCase @Inject constructor(
     private val repository: ScheduleRepository,
 ) {
     /** Returns the default alarm (applies to all days not covered by exceptions). */

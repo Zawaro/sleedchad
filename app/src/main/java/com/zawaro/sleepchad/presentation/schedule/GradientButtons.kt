@@ -36,7 +36,7 @@ fun GradientButton(
     
     Button(
         onClick = onClick,
-        modifier = modifier.graphicsLayer { alpha = 1f }.padding(vertical = 4.dp),
+        modifier = modifier.padding(vertical = 4.dp),
         enabled = enabledByDefault,
         colors = ButtonDefaults.buttonColors().copy(containerColor = Color.Transparent),
         shape = RoundedCornerShape(50.dp)

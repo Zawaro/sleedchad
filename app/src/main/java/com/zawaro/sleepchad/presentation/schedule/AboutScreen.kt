@@ -2,7 +2,7 @@ package com.zawaro.sleepchad.presentation.schedule
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -22,7 +22,7 @@ fun AboutScreen(onClose: () -> Unit) {
                 title = { Text("About", color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -50,7 +50,9 @@ fun AboutScreen(onClose: () -> Unit) {
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply { 
                     data = android.net.Uri.parse("https://github.com/anomalyco/sleepchad") 
                 }
-                context.startActivity(intent)
+                if (intent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(intent)
+                }
             }) { Text("Open GitHub Repository") }
             
             Spacer(modifier = Modifier.height(16.dp))

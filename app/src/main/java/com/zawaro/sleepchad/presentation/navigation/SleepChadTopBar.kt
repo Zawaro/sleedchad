@@ -3,8 +3,8 @@ package com.zawaro.sleepchad.presentation.navigation
 import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Bedtime
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,8 +44,8 @@ fun SleepChadTopAppBar(
         actions = {
             IconButton(onClick = onSettingsClick) {
                 Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Account"
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = "Settings"
                 )
             }
         },

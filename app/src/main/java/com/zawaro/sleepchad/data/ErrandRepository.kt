@@ -2,12 +2,15 @@ package com.zawaro.sleepchad.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Repository for managing errands associated with alarms.
  * Errands are linked to specific alarms via alarmId foreign key.
  */
-class ErrandRepository(
+@Singleton
+class ErrandRepository @Inject constructor(
     private val errandDao: ErrandDao,
 ) {
     /**

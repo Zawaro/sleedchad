@@ -1,8 +1,9 @@
 package com.zawaro.sleepchad.domain.usecases
 
 import com.zawaro.sleepchad.domain.repository.UserPreferencesRepository
+import javax.inject.Inject
 
-class GetUserPreferencesUseCase(
+class GetUserPreferencesUseCase @Inject constructor(
     private val repository: UserPreferencesRepository,
 ) {
     suspend operator fun invoke() = repository.getUserPreferences()
@@ -11,7 +12,7 @@ class GetUserPreferencesUseCase(
         repository.saveUserPreferences(preferences)
 }
 
-class SaveUserPreferencesUseCase(
+class SaveUserPreferencesUseCase @Inject constructor(
     private val repository: UserPreferencesRepository,
 ) {
     suspend operator fun invoke(preferences: com.zawaro.sleepchad.data.UserPreferencesEntity): Long = 
